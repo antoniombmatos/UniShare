@@ -1,0 +1,20 @@
+﻿@model IEnumerable<UniShare.Models.SubjectEnrollment>
+
+<h2>Minhas Disciplinas</h2>
+
+@if (Model != null && Model.Any())
+{
+    <ul class="list-group">
+        @foreach (var enrollment in Model)
+        {
+            var subject = enrollment.Subject;
+            <li class="list-group-item">
+                <a asp-action="Details" asp-route-id="@subject.Id">@subject.Name</a>
+            </li>
+        }
+    </ul>
+}
+else
+{
+    <div class="alert alert-info">Ainda não estás inscrito em nenhuma disciplina.</div>
+}

@@ -32,6 +32,7 @@ namespace UniShare.Controllers
         [HttpGet]
         public async Task<IActionResult> Register()
         {
+
             var courses = await _context.Courses
                 .Where(c => c.IsActive)
                 .OrderBy(c => c.Name)
@@ -57,51 +58,50 @@ namespace UniShare.Controllers
                 if (!model.Email.EndsWith("@ipt.pt", StringComparison.OrdinalIgnoreCase))
                 {
                     ModelState.AddModelError("Email", "Só são permitidos emails do domínio @ipt.pt.");
+                    goto ReturnView;
                 }
-                else
+
+                // ✔️ Verifica duplicação de número de aluno
+                var existingUser = await _userManager.Users
+                    .FirstOrDefaultAsync(u => u.StudentNumber == model.StudentNumber);
+
+                if (existingUser != null)
                 {
-                    // ✔️ Verifica duplicação de número de aluno
-                    var existingUser = await _userManager.Users
-                        .FirstOrDefaultAsync(u => u.StudentNumber == model.StudentNumber);
+                    ModelState.AddModelError("StudentNumber", "Este número de aluno já está em uso.");
+                    goto ReturnView;
+                }
 
-                    if (existingUser != null)
-                    {
-                        ModelState.AddModelError("StudentNumber", "Este número de aluno já está em uso.");
-                    }
-                    else
-                    {
-                        var user = new ApplicationUser
-                        {
-                            UserName = model.Email,
-                            Email = model.Email,
-                            FullName = model.FullName,
-                            StudentNumber = model.StudentNumber,
-                            CourseId = model.CourseId
-                        };
+                var user = new ApplicationUser
+                {
+                    UserName = model.Email,
+                    Email = model.Email,
+                    FullName = model.FullName,
+                    StudentNumber = model.StudentNumber,
+                    CourseId = model.CourseId
+                };
 
-                        var result = await _userManager.CreateAsync(user, model.Password);
+                var result = await _userManager.CreateAsync(user, model.Password);
 
-                        if (result.Succeeded)
-                        {
-                            await _userManager.AddToRoleAsync(user, "Aluno");
-                            await _signInManager.SignInAsync(user, isPersistent: false);
-                            return RedirectToAction("Index", "Home");
-                        }
+                if (result.Succeeded)
+                {
+                    await _userManager.AddToRoleAsync(user, "Aluno");
+                    await _signInManager.SignInAsync(user, isPersistent: false);
+                    return RedirectToAction("Index", "Home");
+                }
 
-                        foreach (var error in result.Errors)
-                        {
-                            ModelState.AddModelError(string.Empty, error.Description);
-                        }
-                    }
+                foreach (var error in result.Errors)
+                {
+                    ModelState.AddModelError(string.Empty, error.Description);
                 }
             }
 
+        ReturnView:
             var courses = await _context.Courses
                 .Where(c => c.IsActive)
                 .OrderBy(c => c.Name)
                 .ToListAsync();
-
             ViewBag.Courses = new SelectList(courses, "Id", "Name");
+
             return View(model);
         }
 

@@ -1,0 +1,17 @@
+﻿@model IEnumerable<UniShare.Models.StudyGroup>
+
+<h2>Grupos de Estudo</h2>
+
+@if (Model != null && Model.Any())
+{
+    <ul>
+        @foreach (var grupo in Model)
+        {
+            <li>@grupo.Name</li>
+        }
+    </ul>
+}
+else
+{
+    <p>Não estás em nenhum grupo de estudo.</p>
+}
