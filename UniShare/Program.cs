@@ -8,14 +8,14 @@ using UniShare.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Connection string
+// 1. Ligação à base de dados
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ??
     "Server=(localdb)\\mssqllocaldb;Database=UniShareDB;Trusted_Connection=true;MultipleActiveResultSets=true";
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(connectionString));
 
-// Identity
+// 2. Identity com roles
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 {
     options.SignIn.RequireConfirmedAccount = false;
@@ -28,47 +28,15 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 .AddEntityFrameworkStores<ApplicationDbContext>()
 .AddDefaultTokenProviders();
 
-// JWT Authentication
-var jwtSettings = builder.Configuration.GetSection("Jwt");
-var jwtValue = jwtSettings["Key"]; 
-if (string.IsNullOrEmpty(jwtValue))
-{
-    throw new ArgumentNullException("Jwt:Admin123!", "JWT key is missing or null.");
-}
-var key = Encoding.UTF8.GetBytes(jwtValue);
 
-
-builder.Services.AddAuthentication(options =>
-{
-    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-})
-.AddJwtBearer(options =>
-{
-    options.RequireHttpsMetadata = true;
-    options.SaveToken = true;
-    options.TokenValidationParameters = new TokenValidationParameters
-    {
-        ValidateIssuer = true,
-        ValidateAudience = true,
-        ValidateLifetime = true,
-        ValidateIssuerSigningKey = true,
-        ValidIssuer = jwtSettings["Issuer"],
-        ValidAudience = jwtSettings["Audience"],
-        IssuerSigningKey = new SymmetricSecurityKey(key)
-    };
-});
-
-// MVC + API
+// 4. MVC, SignalR, etc.
 builder.Services.AddControllersWithViews()
-    .AddNewtonsoftJson(options =>
-        options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore);
-
+    .AddNewtonsoftJson(opt => opt.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore);
 builder.Services.AddRazorPages();
 builder.Services.AddSignalR();
 builder.Services.AddAutoMapper(typeof(Program));
 
-// Authorization policies
+// 5. Policies
 builder.Services.AddAuthorization(options =>
 {
     options.AddPolicy("AdminOnly", policy => policy.RequireRole("Administrador"));
@@ -77,9 +45,9 @@ builder.Services.AddAuthorization(options =>
     options.AddPolicy("AllUsers", policy => policy.RequireRole("Aluno", "Professor", "Administrador"));
 });
 
+// 6. App
 var app = builder.Build();
 
-// Middleware
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
@@ -90,15 +58,15 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseRouting();
 
-app.UseAuthentication(); // <----- JWT aqui
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
-
 app.MapRazorPages();
 
+// Seed inicial
 using (var scope = app.Services.CreateScope())
 {
     await SeedData.Initialize(scope.ServiceProvider);

@@ -7,6 +7,8 @@ using UniShare.Data;
 using UniShare.Models;
 using UniShare.ViewModels;
 
+using System.Text.RegularExpressions;
+
 namespace UniShare.Controllers
 {
     public class AccountController : Controller
@@ -15,10 +17,7 @@ namespace UniShare.Controllers
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly ApplicationDbContext _context;
 
-        public AccountController(
-            UserManager<ApplicationUser> userManager,
-            SignInManager<ApplicationUser> signInManager,
-            ApplicationDbContext context)
+        public AccountController(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager, ApplicationDbContext context)
         {
             _userManager = userManager;
             _signInManager = signInManager;
@@ -26,7 +25,7 @@ namespace UniShare.Controllers
         }
 
         /// <summary>
-        /// Display the registration page for new users to enter their details.
+        /// Exibe o formulário de registo de novo utilizador.
         /// </summary>
         /// <returns></returns>
 
@@ -43,7 +42,7 @@ namespace UniShare.Controllers
         }
 
         /// <summary>
-        /// Register a new user with the provided details and redirect to the home page if successful.
+        /// Regista um novo utilizador.
         /// </summary>
         /// <param name="model"></param>
         /// <returns></returns>
@@ -54,42 +53,49 @@ namespace UniShare.Controllers
         {
             if (ModelState.IsValid)
             {
-                // Check if student number is unique
-                var existingUser = await _userManager.Users
-                    .FirstOrDefaultAsync(u => u.StudentNumber == model.StudentNumber);
-
-                if (existingUser != null)
+                // ✔️ Verifica domínio @ipt.pt
+                if (!model.Email.EndsWith("@ipt.pt", StringComparison.OrdinalIgnoreCase))
                 {
-                    ModelState.AddModelError("StudentNumber", "Este número de aluno já está em uso.");
+                    ModelState.AddModelError("Email", "Só são permitidos emails do domínio @ipt.pt.");
                 }
                 else
                 {
-                    var user = new ApplicationUser
-                    {
-                        UserName = model.Email,
-                        Email = model.Email,
-                        FullName = model.FullName,
-                        StudentNumber = model.StudentNumber,
-                        CourseId = model.CourseId
-                    };
+                    // ✔️ Verifica duplicação de número de aluno
+                    var existingUser = await _userManager.Users
+                        .FirstOrDefaultAsync(u => u.StudentNumber == model.StudentNumber);
 
-                    var result = await _userManager.CreateAsync(user, model.Password);
-                    
-                    if (result.Succeeded)
+                    if (existingUser != null)
                     {
-                        await _userManager.AddToRoleAsync(user, "Aluno");
-                        await _signInManager.SignInAsync(user, isPersistent: false);
-                        return RedirectToAction("Index", "Home");
+                        ModelState.AddModelError("StudentNumber", "Este número de aluno já está em uso.");
                     }
-
-                    foreach (var error in result.Errors)
+                    else
                     {
-                        ModelState.AddModelError(string.Empty, error.Description);
+                        var user = new ApplicationUser
+                        {
+                            UserName = model.Email,
+                            Email = model.Email,
+                            FullName = model.FullName,
+                            StudentNumber = model.StudentNumber,
+                            CourseId = model.CourseId
+                        };
+
+                        var result = await _userManager.CreateAsync(user, model.Password);
+
+                        if (result.Succeeded)
+                        {
+                            await _userManager.AddToRoleAsync(user, "Aluno");
+                            await _signInManager.SignInAsync(user, isPersistent: false);
+                            return RedirectToAction("Index", "Home");
+                        }
+
+                        foreach (var error in result.Errors)
+                        {
+                            ModelState.AddModelError(string.Empty, error.Description);
+                        }
                     }
                 }
             }
 
-            // Reload courses if model is invalid
             var courses = await _context.Courses
                 .Where(c => c.IsActive)
                 .OrderBy(c => c.Name)
@@ -100,7 +106,7 @@ namespace UniShare.Controllers
         }
 
         /// <summary>
-        /// Display the login page for users to enter their credentials.
+        /// Exibe o formulário de login de utilizador.
         /// </summary>
         /// <param name="returnUrl"></param>
         /// <returns></returns>
@@ -113,7 +119,7 @@ namespace UniShare.Controllers
         }
 
         /// <summary>
-        /// Login the user with the provided credentials and redirect to the specified return URL or home page.
+        /// Realiza o login de um utilizador.
         /// </summary>
         /// <param name="model"></param>
         /// <param name="returnUrl"></param>
@@ -131,23 +137,19 @@ namespace UniShare.Controllers
                     model.Email, model.Password, model.RememberMe, lockoutOnFailure: false);
 
                 if (result.Succeeded)
-                {
                     return RedirectToLocal(returnUrl);
-                }
-                else
-                {
-                    ModelState.AddModelError(string.Empty, "Tentativa de login inválida.");
-                }
+
+                ModelState.AddModelError(string.Empty, "Tentativa de login inválida.");
             }
 
             return View(model);
         }
 
         /// <summary>
-        /// Logout the current user and redirect to the home page.
+        /// Realiza o logout do utilizador autenticado.
         /// </summary>
         /// <returns></returns>
-        
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize]
@@ -160,13 +162,8 @@ namespace UniShare.Controllers
         private IActionResult RedirectToLocal(string? returnUrl)
         {
             if (Url.IsLocalUrl(returnUrl))
-            {
                 return Redirect(returnUrl);
-            }
-            else
-            {
-                return RedirectToAction("Index", "Home");
-            }
+            return RedirectToAction("Index", "Home");
         }
     }
 }
