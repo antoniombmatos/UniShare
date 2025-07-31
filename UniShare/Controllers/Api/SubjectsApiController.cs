@@ -7,13 +7,9 @@ using UniShare.Models;
 
 namespace UniShare.Controllers.Api
 {
-    /// <summary>
-    /// Controlador de API para gestão de disciplinas e posts relacionados.
-    /// </summary>
     [Route("api/[controller]")]
     [ApiController]
     [Authorize]
-
     public class SubjectsApiController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
@@ -25,30 +21,94 @@ namespace UniShare.Controllers.Api
             _userManager = userManager;
         }
 
-        /// <summary>
-        /// Obtém os posts de uma disciplina específica.
-        /// </summary>
-        /// <param name="subjectId"></param>
-        /// <param name="page"></param>
-        /// <param name="pageSize"></param>
-        /// <returns></returns>
+        // ========== SUBJECT ENROLLMENT ==========
+        [HttpGet("enrolled")]
+        public async Task<IActionResult> GetEnrolledSubjects()
+        {
+            var user = await _userManager.GetUserAsync(User);
+
+            var subjects = await _context.SubjectEnrollments
+                .Include(e => e.Subject)
+                    .ThenInclude(s => s.Course)
+                .Where(e => e.UserId == user!.Id)
+                .Select(e => new
+                {
+                    e.Subject.Id,
+                    e.Subject.Name,
+                    e.Subject.Code,
+                    Course = e.Subject.Course.Name,
+                    e.IsCompleted,
+                    e.Grade
+                })
+                .ToListAsync();
+
+            return Ok(subjects);
+        }
+
+        [HttpPost("enroll")]
+        public async Task<IActionResult> EnrollInSubject([FromBody] EnrollRequest request)
+        {
+            var user = await _userManager.GetUserAsync(User);
+
+            var subject = await _context.Subjects
+                .Include(s => s.Course)
+                .FirstOrDefaultAsync(s => s.Id == request.SubjectId);
+
+            if (subject == null)
+                return NotFound("Disciplina não encontrada.");
+
+            if (subject.CourseId != user!.CourseId)
+                return Forbid();
+
+            var alreadyEnrolled = await _context.SubjectEnrollments
+                .AnyAsync(e => e.UserId == user.Id && e.SubjectId == request.SubjectId);
+
+            if (alreadyEnrolled)
+                return BadRequest("Já está inscrito nesta disciplina.");
+
+            var enrollment = new SubjectEnrollment
+            {
+                UserId = user.Id,
+                SubjectId = request.SubjectId
+            };
+
+            _context.SubjectEnrollments.Add(enrollment);
+            await _context.SaveChangesAsync();
+
+            return Ok(new { message = "Inscrição efetuada com sucesso." });
+        }
+
+        [HttpPatch("enrollment/{id}/complete")]
+        public async Task<IActionResult> CompleteSubject(int id, [FromBody] CompleteRequest request)
+        {
+            var enrollment = await _context.SubjectEnrollments.FindAsync(id);
+            if (enrollment == null)
+                return NotFound();
+
+            enrollment.Grade = request.Grade;
+            enrollment.IsCompleted = true;
+            enrollment.CompletionDate = DateTime.UtcNow;
+
+            await _context.SaveChangesAsync();
+
+            return Ok(new { message = "Disciplina marcada como concluída." });
+        }
+
+        // ========== POSTS ==========
         [HttpGet("{subjectId}/posts")]
         public async Task<IActionResult> GetPosts(int subjectId, int page = 1, int pageSize = 10)
         {
             var user = await _userManager.GetUserAsync(User);
-            
-            // Check if user is enrolled in subject
+
             var isEnrolled = await _context.SubjectEnrollments
                 .AnyAsync(e => e.UserId == user!.Id && e.SubjectId == subjectId);
 
             if (!isEnrolled)
-            {
                 return Forbid();
-            }
 
             var posts = await _context.Posts
                 .Include(p => p.Author)
-                .Include(p => p.Comments)
+                .Include(p => p.Comments.Where(c => c.IsActive))
                     .ThenInclude(c => c.Author)
                 .Where(p => p.SubjectId == subjectId && p.IsActive)
                 .OrderByDescending(p => p.CreatedAt)
@@ -64,39 +124,29 @@ namespace UniShare.Controllers.Api
                     p.LinkUrl,
                     p.CreatedAt,
                     Author = new { p.Author.FullName, p.Author.Id },
-                    Comments = p.Comments.Where(c => c.IsActive).Select(c => new
+                    Comments = p.Comments.Select(c => new
                     {
                         c.Id,
                         c.Content,
                         c.CreatedAt,
                         Author = new { c.Author.FullName, c.Author.Id }
-                    }).ToList()
+                    })
                 })
                 .ToListAsync();
 
             return Ok(posts);
         }
 
-        /// <summary>
-        /// Cria um novo post em uma disciplina específica.
-        /// </summary>
-        /// <param name="subjectId"></param>
-        /// <param name="request"></param>
-        /// <returns></returns>
-
         [HttpPost("{subjectId}/posts")]
         public async Task<IActionResult> CreatePost(int subjectId, [FromBody] CreatePostRequest request)
         {
             var user = await _userManager.GetUserAsync(User);
-            
-            // Check if user is enrolled in subject
+
             var isEnrolled = await _context.SubjectEnrollments
                 .AnyAsync(e => e.UserId == user!.Id && e.SubjectId == subjectId);
 
             if (!isEnrolled)
-            {
                 return Forbid();
-            }
 
             var post = new Post
             {
@@ -125,13 +175,6 @@ namespace UniShare.Controllers.Api
             });
         }
 
-        /// <summary>
-        /// Cria um novo comentário em um post específico.
-        /// </summary>
-        /// <param name="postId"></param>
-        /// <param name="request"></param>
-        /// <returns></returns>
-
         [HttpPost("posts/{postId}/comments")]
         public async Task<IActionResult> CreateComment(int postId, [FromBody] CreateCommentRequest request)
         {
@@ -140,22 +183,20 @@ namespace UniShare.Controllers.Api
                 .Include(p => p.Subject)
                 .FirstOrDefaultAsync(p => p.Id == postId);
 
-            if (post == null) return NotFound();
+            if (post == null)
+                return NotFound();
 
-            // Check if user is enrolled in subject
             var isEnrolled = await _context.SubjectEnrollments
                 .AnyAsync(e => e.UserId == user!.Id && e.SubjectId == post.SubjectId);
 
             if (!isEnrolled)
-            {
                 return Forbid();
-            }
 
             var comment = new Comment
             {
                 Content = request.Content,
                 PostId = postId,
-                AuthorId = user!.Id
+                AuthorId = user.Id
             };
 
             _context.Comments.Add(comment);
@@ -174,50 +215,27 @@ namespace UniShare.Controllers.Api
             });
         }
 
-        /// <summary>
-        /// Obtém as disciplinas em que o utilizador está inscrito.
-        /// </summary>
-        /// <returns></returns>
-
-        [HttpGet("enrolled")]
-        public async Task<IActionResult> GetEnrolledSubjects()
+        // ========== DTOs ==========
+        public class CreatePostRequest
         {
-            var user = await _userManager.GetUserAsync(User);
-            
-            var subjects = await _context.SubjectEnrollments
-                .Include(e => e.Subject)
-                    .ThenInclude(s => s.Course)
-                .Where(e => e.UserId == user!.Id)
-                .Select(e => new
-                {
-                    e.Subject.Id,
-                    e.Subject.Name,
-                    e.Subject.Code,
-                    Course = e.Subject.Course.Name,
-                    e.IsCompleted,
-                    e.Grade
-                })
-                .ToListAsync();
-
-            return Ok(subjects);
+            public string Content { get; set; } = string.Empty;
+            public PostType Type { get; set; }
+            public string? LinkUrl { get; set; }
         }
-    }
 
-    /// <summary>
-    /// Modelo de solicitação para criação de postagens.
-    /// </summary>
-    public class CreatePostRequest
-    {
-        public string Content { get; set; } = string.Empty;
-        public PostType Type { get; set; }
-        public string? LinkUrl { get; set; }
-    }
+        public class CreateCommentRequest
+        {
+            public string Content { get; set; } = string.Empty;
+        }
 
-    /// <summary>
-    /// Modelo de solicitação para criação de comentários.
-    /// </summary>
-    public class CreateCommentRequest
-    {
-        public string Content { get; set; } = string.Empty;
+        public class EnrollRequest
+        {
+            public int SubjectId { get; set; }
+        }
+
+        public class CompleteRequest
+        {
+            public decimal Grade { get; set; }
+        }
     }
 }

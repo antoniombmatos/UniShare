@@ -121,7 +121,7 @@ namespace UniShare.Data
 
         private static async Task SeedAdminUser(UserManager<ApplicationUser> userManager, ApplicationDbContext context)
         {
-            const string adminEmail = "admin@unishare.pt";
+            const string adminEmail = "ambmatos193@gmail.com";
             const string adminPassword = "Admin123!";
 
             var adminUser = await userManager.FindByEmailAsync(adminEmail);
