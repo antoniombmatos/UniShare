@@ -1,0 +1,200 @@
+@model UniShare.Models.Subject
+@{
+    ViewData["Title"] = Model.Name;
+    var posts = ViewBag.Posts as List<UniShare.Models.Post> ?? new List<UniShare.Models.Post>();
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="h3 mb-1">@Model.Name</h1>
+        <div class="text-muted">
+            <span class="badge bg-primary me-2">@Model.Code</span>
+            <span class="me-3">@Model.ECTS ECTS</span>
+            <span class="me-3">@Model.Year.º Ano</span>
+            <span>@Model.Semester.º Semestre</span>
+        </div>
+    </div>
+    <a asp-action="Index" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left me-2"></i>Voltar
+    </a>
+</div>
+
+@if (!string.IsNullOrEmpty(Model.Description))
+{
+    <div class="alert alert-info">
+        <i class="bi bi-info-circle me-2"></i>@Model.Description
+    </div>
+}
+
+<!-- New Post Form -->
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-header bg-white">
+        <h5 class="card-title mb-0">
+            <i class="bi bi-plus-circle me-2"></i>Nova Publicação
+        </h5>
+    </div>
+    <div class="card-body">
+        <form asp-action="CreatePost" method="post" enctype="multipart/form-data">
+            <input type="hidden" name="subjectId" value="@Model.Id" />
+            
+            <div class="mb-3">
+                <textarea name="content" class="form-control" rows="3" placeholder="Partilhe algo com a turma..." required></textarea>
+            </div>
+            
+            <div class="row g-3 mb-3">
+                <div class="col-md-4">
+                    <select name="type" class="form-select" id="postType">
+                        <option value="0">Texto</option>
+                        <option value="1">Documento</option>
+                        <option value="2">Link</option>
+                    </select>
+                </div>
+                <div class="col-md-4" id="linkUrlDiv" style="display: none;">
+                    <input type="url" name="linkUrl" class="form-control" placeholder="https://exemplo.com" />
+                </div>
+                <div class="col-md-4" id="fileDiv" style="display: none;">
+                    <input type="file" name="file" class="form-control" accept=".pdf,.doc,.docx,.ppt,.pptx,.jpg,.jpeg,.png,.gif,.txt,.zip,.rar" />
+                </div>
+            </div>
+            
+            <div class="d-flex justify-content-end">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-send me-2"></i>Publicar
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Posts Feed -->
+<div class="row">
+    <div class="col-12">
+        @if (posts.Any())
+        {
+            @foreach (var post in posts)
+            {
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-body">
+                        <div class="d-flex align-items-start mb-3">
+                            <div class="flex-shrink-0">
+                                <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                    <i class="bi bi-person"></i>
+                                </div>
+                            </div>
+                            <div class="flex-grow-1 ms-3">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <h6 class="mb-1">@post.Author.FullName</h6>
+                                        <small class="text-muted">@post.CreatedAt.ToString("dd/MM/yyyy HH:mm")</small>
+                                    </div>
+                                    <div>
+                                        @if (post.Type == UniShare.Models.PostType.Document)
+                                        {
+                                            <span class="badge bg-info">
+                                                <i class="bi bi-file-earmark me-1"></i>Documento
+                                            </span>
+                                        }
+                                        else if (post.Type == UniShare.Models.PostType.Link)
+                                        {
+                                            <span class="badge bg-warning">
+                                                <i class="bi bi-link-45deg me-1"></i>Link
+                                            </span>
+                                        }
+                                    </div>
+                                </div>
+                                
+                                <div class="mt-2 post-content">@post.Content</div>
+                                
+                                @if (post.Type == UniShare.Models.PostType.Document && !string.IsNullOrEmpty(post.FilePath))
+                                {
+                                    <div class="mt-3">
+                                        <a href="@post.FilePath" target="_blank" class="btn btn-sm btn-outline-info">
+                                            <i class="bi bi-download me-2"></i>@post.FileName (@post.FileSize)
+                                        </a>
+                                    </div>
+                                }
+                                else if (post.Type == UniShare.Models.PostType.Link && !string.IsNullOrEmpty(post.LinkUrl))
+                                {
+                                    <div class="mt-3">
+                                        <a href="@post.LinkUrl" target="_blank" class="btn btn-sm btn-outline-warning">
+                                            <i class="bi bi-box-arrow-up-right me-2"></i>Visitar Link
+                                        </a>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                        
+                        <!-- Comments Section -->
+                        @if (post.Comments.Any())
+                        {
+                            <div class="border-top pt-3 mt-3">
+                                <h6 class="mb-3">
+                                    <i class="bi bi-chat-dots me-2"></i>Comentários (@post.Comments.Count)
+                                </h6>
+                                
+                                @foreach (var comment in post.Comments.Where(c => c.IsActive).OrderBy(c => c.CreatedAt))
+                                {
+                                    <div class="d-flex align-items-start mb-3">
+                                        <div class="flex-shrink-0">
+                                            <div class="bg-secondary text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 28px; height: 28px;">
+                                                <i class="bi bi-person small"></i>
+                                            </div>
+                                        </div>
+                                        <div class="flex-grow-1 ms-2">
+                                            <div class="bg-light rounded p-2">
+                                                <div class="d-flex justify-content-between align-items-start">
+                                                    <small class="fw-bold">@comment.Author.FullName</small>
+                                                    <small class="text-muted">@comment.CreatedAt.ToString("dd/MM HH:mm")</small>
+                                                </div>
+                                                <div class="mt-1">@comment.Content</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        }
+                        
+                        <!-- Add Comment Form -->
+                        <div class="border-top pt-3 mt-3">
+                            <form asp-action="CreateComment" method="post">
+                                <input type="hidden" name="postId" value="@post.Id" />
+                                <div class="input-group">
+                                    <input type="text" name="content" class="form-control" placeholder="Escreva um comentário..." required />
+                                    <button type="submit" class="btn btn-outline-primary">
+                                        <i class="bi bi-send"></i>
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="text-center py-5">
+                <i class="bi bi-chat-dots display-1 text-muted"></i>
+                <h3 class="mt-3">Nenhuma publicação ainda</h3>
+                <p class="text-muted">Seja o primeiro a partilhar algo nesta disciplina!</p>
+            </div>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.getElementById('postType').addEventListener('change', function() {
+            const linkDiv = document.getElementById('linkUrlDiv');
+            const fileDiv = document.getElementById('fileDiv');
+            
+            linkDiv.style.display = 'none';
+            fileDiv.style.display = 'none';
+            
+            if (this.value === '1') { // Document
+                fileDiv.style.display = 'block';
+            } else if (this.value === '2') { // Link
+                linkDiv.style.display = 'block';
+            }
+        });
+    </script>
+}

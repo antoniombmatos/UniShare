@@ -1,0 +1,240 @@
+@{
+    ViewData["Title"] = "Dashboard";
+}
+
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="h3 mb-0">
+                <i class="bi bi-house-door me-2"></i>Dashboard
+            </h1>
+            <small class="text-muted">Bem-vindo, @ViewBag.UserName!</small>
+        </div>
+    </div>
+</div>
+
+@if (ViewBag.IsStudent)
+{
+    <!-- Student Dashboard -->
+    <div class="row g-4 mb-4">
+        <div class="col-xl-3 col-md-6">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0">
+                            <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 48px; height: 48px;">
+                                <i class="bi bi-book"></i>
+                            </div>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <div class="small text-muted">Disciplinas Inscritas</div>
+                            <div class="h5 mb-0">@ViewBag.EnrolledSubjects</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-3 col-md-6">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0">
+                            <div class="bg-success text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 48px; height: 48px;">
+                                <i class="bi bi-award"></i>
+                            </div>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <div class="small text-muted">ECTS Completados</div>
+                            <div class="h5 mb-0">@ViewBag.CompletedECTS / @ViewBag.TotalECTS</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-3 col-md-6">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0">
+                            <div class="bg-info text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 48px; height: 48px;">
+                                <i class="bi bi-graph-up"></i>
+                            </div>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <div class="small text-muted">Média Geral</div>
+                            <div class="h5 mb-0">@ViewBag.AverageGrade</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-3 col-md-6">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0">
+                            <div class="bg-warning text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 48px; height: 48px;">
+                                <i class="bi bi-percent"></i>
+                            </div>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <div class="small text-muted">Progresso do Curso</div>
+                            <div class="h5 mb-0">@ViewBag.ProgressPercentage%</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-chat-dots me-2"></i>Publicações Recentes
+                    </h5>
+                </div>
+                <div class="card-body">
+                    @if (ViewBag.RecentPosts != null && ((List<UniShare.Models.Post>)ViewBag.RecentPosts).Any())
+                    {
+                        @foreach (var post in (List<UniShare.Models.Post>)ViewBag.RecentPosts)
+                        {
+                            <div class="border-bottom pb-3 mb-3">
+                                <div class="d-flex align-items-start">
+                                    <div class="flex-shrink-0">
+                                        <div class="bg-secondary text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
+                                            <i class="bi bi-person small"></i>
+                                        </div>
+                                    </div>
+                                    <div class="flex-grow-1 ms-3">
+                                        <div class="d-flex justify-content-between align-items-start">
+                                            <div>
+                                                <h6 class="mb-1">@post.Author.FullName</h6>
+                                                <small class="text-muted">@post.Subject.Name • @post.CreatedAt.ToString("dd/MM/yyyy HH:mm")</small>
+                                            </div>
+                                            @if (post.Type == UniShare.Models.PostType.Document)
+                                            {
+                                                <span class="badge bg-info">Documento</span>
+                                            }
+                                            else if (post.Type == UniShare.Models.PostType.Link)
+                                            {
+                                                <span class="badge bg-warning">Link</span>
+                                            }
+                                        </div>
+                                        <p class="mb-1 mt-2">@post.Content</p>
+                                        <a asp-controller="Subjects" asp-action="Details" asp-route-id="@post.SubjectId" class="btn btn-sm btn-outline-primary">
+                                            Ver disciplina
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="text-center py-4 text-muted">
+                            <i class="bi bi-chat-dots display-4"></i>
+                            <p class="mt-2">Nenhuma publicação recente</p>
+                            <a asp-controller="Subjects" asp-action="Index" class="btn btn-primary">Ver Disciplinas</a>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-calendar-event me-2"></i>Próximos Eventos
+                    </h5>
+                </div>
+                <div class="card-body">
+                    @if (ViewBag.UpcomingEvents != null && ((List<UniShare.Models.CalendarEntry>)ViewBag.UpcomingEvents).Any())
+                    {
+                        @foreach (var entry in (List<UniShare.Models.CalendarEntry>)ViewBag.UpcomingEvents)
+                        {
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="flex-shrink-0">
+                                    <div class="bg-primary text-white rounded d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                        <small class="fw-bold">@entry.DateTime.Day</small>
+                                    </div>
+                                </div>
+                                <div class="flex-grow-1 ms-3">
+                                    <h6 class="mb-1">@entry.Title</h6>
+                                    <small class="text-muted">
+                                        @entry.DateTime.ToString("dd/MM/yyyy HH:mm")
+                                        @if (entry.Subject != null)
+                                        {
+                                            <span> • @entry.Subject.Name</span>
+                                        }
+                                    </small>
+                                </div>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="text-center py-3 text-muted">
+                            <i class="bi bi-calendar-x display-6"></i>
+                            <p class="mt-2 mb-0">Nenhum evento próximo</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<!-- News Section for all users -->
+@if (ViewBag.News != null && ((List<UniShare.Models.News>)ViewBag.News).Any())
+{
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-newspaper me-2"></i>Notícias
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        @foreach (var news in (List<UniShare.Models.News>)ViewBag.News)
+                        {
+                            <div class="col-md-4">
+                                <div class="card h-100 border-0 bg-light">
+                                    <div class="card-body">
+                                        <h6 class="card-title">@news.Title</h6>
+                                        <p class="card-text small">@news.Content.Substring(0, Math.Min(100, news.Content.Length))...</p>
+                                        <small class="text-muted">
+                                            @news.PublicationDate.ToString("dd/MM/yyyy") 
+                                            @if (news.Course != null)
+                                            {
+                                                <span>• @news.Course.Name</span>
+                                            }
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="text-center">
+            <p class="text-muted">
+                <i class="bi bi-lightbulb me-1"></i>
+                Explore as funcionalidades da plataforma através do menu de navegação.
+            </p>
+        </div>
+    </div>
+</div>

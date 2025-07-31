@@ -19,4 +19,228 @@ html {
 
 body {
   margin-bottom: 60px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #f8f9fa;
+}
+
+.footer {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  white-space: nowrap;
+  line-height: 60px;
+  background-color: white;
+}
+
+/* Custom styles for UniShare */
+.navbar-brand {
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.card {
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+}
+
+.hero-section {
+  background: linear-gradient(135deg, #0d6efd 0%, #0b5ed7 100%);
+}
+
+.feature-icon {
+  width: 4rem;
+  height: 4rem;
+  border-radius: 0.75rem;
+}
+
+.bg-gradient {
+  background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0));
+}
+
+/* Form styling */
+.form-floating > .form-control:focus ~ label,
+.form-floating > .form-control:not(:placeholder-shown) ~ label {
+  opacity: 0.65;
+  transform: scale(0.85) translateY(-0.5rem) translateX(0.15rem);
+}
+
+.form-floating > .form-select ~ label {
+  opacity: 0.65;
+  transform: scale(0.85) translateY(-0.5rem) translateX(0.15rem);
+}
+
+/* Post styling */
+.post-content {
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+.post-meta {
+  font-size: 0.875rem;
+  color: #6c757d;
+}
+
+/* Study group chat */
+.chat-container {
+  height: 400px;
+  overflow-y: auto;
+  border: 1px solid #dee2e6;
+  border-radius: 0.375rem;
+  padding: 1rem;
+  background-color: white;
+}
+
+.message {
+  margin-bottom: 1rem;
+  padding: 0.5rem;
+  border-radius: 0.5rem;
+  background-color: #f8f9fa;
+}
+
+.message.own {
+  background-color: #e3f2fd;
+  margin-left: 2rem;
+}
+
+.message.other {
+  background-color: #f5f5f5;
+  margin-right: 2rem;
+}
+
+/* Progress bars */
+.progress {
+  height: 0.5rem;
+}
+
+/* Badge styling */
+.badge {
+  font-size: 0.75em;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .container-fluid {
+    padding-left: 15px;
+    padding-right: 15px;
+  }
+  
+  .hero-section {
+    margin-left: -15px !important;
+    margin-right: -15px !important;
+  }
+}
+
+/* Loading states */
+.loading {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+/* Custom scrollbar */
+.chat-container::-webkit-scrollbar {
+  width: 6px;
+}
+
+.chat-container::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+.chat-container::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 10px;
+}
+
+.chat-container::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+/* File upload styling */
+.file-upload-area {
+  border: 2px dashed #dee2e6;
+  border-radius: 0.5rem;
+  padding: 2rem;
+  text-align: center;
+  transition: border-color 0.2s ease-in-out;
+}
+
+.file-upload-area:hover {
+  border-color: #0d6efd;
+}
+
+.file-upload-area.dragover {
+  border-color: #0d6efd;
+  background-color: #f8f9ff;
+}
+
+/* Status indicators */
+.status-online {
+  color: #198754;
+}
+
+.status-offline {
+  color: #6c757d;
+}
+
+.status-away {
+  color: #ffc107;
+}
+
+/* Animation for notifications */
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.notification {
+  animation: slideInRight 0.3s ease-out;
+}
+
+/* Calendar styling */
+.calendar-day {
+  min-height: 100px;
+  border: 1px solid #dee2e6;
+  padding: 0.5rem;
+}
+
+.calendar-event {
+  background-color: #0d6efd;
+  color: white;
+  border-radius: 0.25rem;
+  padding: 0.25rem 0.5rem;
+  margin-bottom: 0.25rem;
+  font-size: 0.75rem;
+}
+
+/* Study group member list */
+.member-list {
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.member-item {
+  padding: 0.5rem;
+  border-bottom: 1px solid #dee2e6;
+}
+
+.member-item:last-child {
+  border-bottom: none;
+}
+
+/* Dark mode support (future enhancement) */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bs-body-bg: #212529;
+    --bs-body-color: #fff;
+  }
 }
