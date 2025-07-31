@@ -10,8 +10,8 @@
         <div class="text-muted">
             <span class="badge bg-primary me-2">@Model.Code</span>
             <span class="me-3">@Model.ECTS ECTS</span>
-            <span class="me-3">@Model.Year.º Ano</span>
-            <span>@Model.Semester.º Semestre</span>
+            <span class="me-3">@($"{Model.Year}º Ano")</span>
+            <span>@($"{Model.Semester}º Semestre")</span>
         </div>
     </div>
     <a asp-action="Index" class="btn btn-outline-secondary">
