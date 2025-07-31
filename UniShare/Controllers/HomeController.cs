@@ -92,6 +92,11 @@ namespace UniShare.Controllers
             return View();
         }
 
+        /// <summary>
+        /// Displays the user profile page with course information if available.
+        /// </summary>
+        /// <returns></returns>
+
         [Authorize]
         public async Task<IActionResult> Profile()
         {
@@ -112,6 +117,11 @@ namespace UniShare.Controllers
         {
             return View();
         }
+
+        /// <summary>
+        /// Handles errors and displays the error view with the request ID for debugging purposes.
+        /// </summary>
+        /// <returns></returns>
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()

@@ -145,7 +145,12 @@ namespace UniShare.Controllers
             return View();
         }
 
-        // POST: StudyGroups/Create
+        /// <summary>
+        /// Creates a new study group with the provided details and adds the creator as a moderator.
+        /// </summary>
+        /// <param name="studyGroup"></param>
+        /// <returns></returns>
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(StudyGroup studyGroup)
@@ -194,7 +199,12 @@ namespace UniShare.Controllers
             return View(studyGroup);
         }
 
-        // POST: StudyGroups/Join/5
+        /// <summary>
+        /// Allows a user to join an existing study group if they are enrolled in the subject and not already a member.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Join(int id)
@@ -248,7 +258,12 @@ namespace UniShare.Controllers
             return RedirectToAction("Details", new { id });
         }
 
-        // POST: StudyGroups/Leave/5
+        /// <summary>
+        /// Allows a user to leave a study group they are a member of.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Leave(int id)
@@ -266,7 +281,13 @@ namespace UniShare.Controllers
             return RedirectToAction("Index");
         }
 
-        // POST: StudyGroups/SendMessage
+        /// <summary>
+        /// Sends a message in the specified study group if the user is a member.
+        /// </summary>
+        /// <param name="groupId"></param>
+        /// <param name="content"></param>
+        /// <returns></returns>
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> SendMessage(int groupId, string content)

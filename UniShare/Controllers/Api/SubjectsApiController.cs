@@ -7,9 +7,13 @@ using UniShare.Models;
 
 namespace UniShare.Controllers.Api
 {
+    /// <summary>
+    /// Controlador de API para gestão de disciplinas e posts relacionados.
+    /// </summary>
     [Route("api/[controller]")]
     [ApiController]
     [Authorize]
+
     public class SubjectsApiController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
@@ -21,6 +25,13 @@ namespace UniShare.Controllers.Api
             _userManager = userManager;
         }
 
+        /// <summary>
+        /// Obtém os posts de uma disciplina específica.
+        /// </summary>
+        /// <param name="subjectId"></param>
+        /// <param name="page"></param>
+        /// <param name="pageSize"></param>
+        /// <returns></returns>
         [HttpGet("{subjectId}/posts")]
         public async Task<IActionResult> GetPosts(int subjectId, int page = 1, int pageSize = 10)
         {
@@ -66,6 +77,13 @@ namespace UniShare.Controllers.Api
             return Ok(posts);
         }
 
+        /// <summary>
+        /// Cria um novo post em uma disciplina específica.
+        /// </summary>
+        /// <param name="subjectId"></param>
+        /// <param name="request"></param>
+        /// <returns></returns>
+
         [HttpPost("{subjectId}/posts")]
         public async Task<IActionResult> CreatePost(int subjectId, [FromBody] CreatePostRequest request)
         {
@@ -106,6 +124,13 @@ namespace UniShare.Controllers.Api
                 Comments = new List<object>()
             });
         }
+
+        /// <summary>
+        /// Cria um novo comentário em um post específico.
+        /// </summary>
+        /// <param name="postId"></param>
+        /// <param name="request"></param>
+        /// <returns></returns>
 
         [HttpPost("posts/{postId}/comments")]
         public async Task<IActionResult> CreateComment(int postId, [FromBody] CreateCommentRequest request)
@@ -149,6 +174,11 @@ namespace UniShare.Controllers.Api
             });
         }
 
+        /// <summary>
+        /// Obtém as disciplinas em que o utilizador está inscrito.
+        /// </summary>
+        /// <returns></returns>
+
         [HttpGet("enrolled")]
         public async Task<IActionResult> GetEnrolledSubjects()
         {
@@ -173,6 +203,9 @@ namespace UniShare.Controllers.Api
         }
     }
 
+    /// <summary>
+    /// Modelo de solicitação para criação de postagens.
+    /// </summary>
     public class CreatePostRequest
     {
         public string Content { get; set; } = string.Empty;
@@ -180,6 +213,9 @@ namespace UniShare.Controllers.Api
         public string? LinkUrl { get; set; }
     }
 
+    /// <summary>
+    /// Modelo de solicitação para criação de comentários.
+    /// </summary>
     public class CreateCommentRequest
     {
         public string Content { get; set; } = string.Empty;

@@ -7,6 +7,9 @@ using UniShare.Models;
 
 namespace UniShare.Controllers
 {
+    /// <summary>
+    /// Controlador para gestão de disciplinas e posts relacionados.
+    /// </summary>
     [Authorize]
     public class SubjectsController : Controller
     {
@@ -83,7 +86,12 @@ namespace UniShare.Controllers
             return View(subject);
         }
 
-        // POST: Subjects/Enroll/5
+        /// <summary>
+        /// Enrolls the current user in a subject if they are not already enrolled and if the subject belongs to their course.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Enroll(int id)
@@ -122,7 +130,12 @@ namespace UniShare.Controllers
             return RedirectToAction("Index");
         }
 
-        // POST: Subjects/Unenroll/5
+        /// <summary>
+        /// Unenrolls the current user from a subject if they are enrolled.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Unenroll(int id)
@@ -140,7 +153,16 @@ namespace UniShare.Controllers
             return RedirectToAction("Index");
         }
 
-        // POST: Subjects/CreatePost
+        /// <summary>
+        /// Creates a new post in a subject, allowing users to share content, links, or files.
+        /// </summary>
+        /// <param name="subjectId"></param>
+        /// <param name="content"></param>
+        /// <param name="type"></param>
+        /// <param name="linkUrl"></param>
+        /// <param name="file"></param>
+        /// <returns></returns>
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> CreatePost(int subjectId, string content, PostType type, string? linkUrl, IFormFile? file)
@@ -190,7 +212,13 @@ namespace UniShare.Controllers
             return RedirectToAction("Details", new { id = subjectId });
         }
 
-        // POST: Subjects/CreateComment
+        /// <summary>
+        /// Creates a new comment on a post within a subject, allowing users to discuss and provide feedback on posts.
+        /// </summary>
+        /// <param name="postId"></param>
+        /// <param name="content"></param>
+        /// <returns></returns>
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> CreateComment(int postId, string content)
@@ -241,7 +269,13 @@ namespace UniShare.Controllers
             return View(enrollments);
         }
 
-        // POST: Subjects/CompleteSubject
+        /// <summary>
+        /// Completes a subject for the user, marking it as completed and assigning a grade.
+        /// </summary>
+        /// <param name="enrollmentId"></param>
+        /// <param name="grade"></param>
+        /// <returns></returns>
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> CompleteSubject(int enrollmentId, decimal grade)

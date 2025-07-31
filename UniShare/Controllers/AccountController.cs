@@ -25,6 +25,11 @@ namespace UniShare.Controllers
             _context = context;
         }
 
+        /// <summary>
+        /// Display the registration page for new users to enter their details.
+        /// </summary>
+        /// <returns></returns>
+
         [HttpGet]
         public async Task<IActionResult> Register()
         {
@@ -36,6 +41,12 @@ namespace UniShare.Controllers
             ViewBag.Courses = new SelectList(courses, "Id", "Name");
             return View();
         }
+
+        /// <summary>
+        /// Register a new user with the provided details and redirect to the home page if successful.
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns></returns>
 
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -88,12 +99,25 @@ namespace UniShare.Controllers
             return View(model);
         }
 
+        /// <summary>
+        /// Display the login page for users to enter their credentials.
+        /// </summary>
+        /// <param name="returnUrl"></param>
+        /// <returns></returns>
+
         [HttpGet]
         public IActionResult Login(string? returnUrl = null)
         {
             ViewData["ReturnUrl"] = returnUrl;
             return View();
         }
+
+        /// <summary>
+        /// Login the user with the provided credentials and redirect to the specified return URL or home page.
+        /// </summary>
+        /// <param name="model"></param>
+        /// <param name="returnUrl"></param>
+        /// <returns></returns>
 
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -119,6 +143,11 @@ namespace UniShare.Controllers
             return View(model);
         }
 
+        /// <summary>
+        /// Logout the current user and redirect to the home page.
+        /// </summary>
+        /// <returns></returns>
+        
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize]

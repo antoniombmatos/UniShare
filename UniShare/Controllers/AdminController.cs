@@ -39,11 +39,22 @@ namespace UniShare.Controllers
             return View(courses);
         }
 
+        /// <summary>
+        /// Exibe a página para criar um novo curso.
+        /// </summary>
+        /// <returns></returns>
+
         [HttpGet]
         public IActionResult CreateCourse()
         {
             return View();
         }
+
+        /// <summary>
+        /// Cria um novo curso com os dados fornecidos.
+        /// </summary>
+        /// <param name="course"></param>
+        /// <returns></returns>
 
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -58,6 +69,12 @@ namespace UniShare.Controllers
             return View(course);
         }
 
+        /// <summary>
+        /// Exibe a página para editar um curso existente.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+
         [HttpGet]
         public async Task<IActionResult> EditCourse(int? id)
         {
@@ -68,6 +85,13 @@ namespace UniShare.Controllers
 
             return View(course);
         }
+
+        /// <summary>
+        /// Atualiza os dados de um curso existente com os dados fornecidos.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="course"></param>
+        /// <returns></returns>
 
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -92,6 +116,12 @@ namespace UniShare.Controllers
             }
             return View(course);
         }
+
+        /// <summary>
+        /// Desativa um curso existente, marcando-o como inativo.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
 
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -120,6 +150,11 @@ namespace UniShare.Controllers
             return View(subjects);
         }
 
+        /// <summary>
+        /// Exibe a página para criar uma nova disciplina.
+        /// </summary>
+        /// <returns></returns>
+
         [HttpGet]
         public async Task<IActionResult> CreateSubject()
         {
@@ -127,6 +162,12 @@ namespace UniShare.Controllers
             ViewBag.Professors = new SelectList(await GetProfessorsAsync(), "Id", "FullName");
             return View();
         }
+
+        /// <summary>
+        /// Cria uma nova disciplina com os dados fornecidos.
+        /// </summary>
+        /// <param name="subject"></param>
+        /// <returns></returns>
 
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -144,6 +185,12 @@ namespace UniShare.Controllers
             return View(subject);
         }
 
+        /// <summary>
+        /// Exibe a página para editar uma disciplina existente.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+
         [HttpGet]
         public async Task<IActionResult> EditSubject(int? id)
         {
@@ -156,6 +203,13 @@ namespace UniShare.Controllers
             ViewBag.Professors = new SelectList(await GetProfessorsAsync(), "Id", "FullName", subject.ProfessorId);
             return View(subject);
         }
+
+        /// <summary>
+        /// Atualiza os dados de uma disciplina existente com os dados fornecidos.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="subject"></param>
+        /// <returns></returns>
 
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -202,6 +256,12 @@ namespace UniShare.Controllers
             return View(usersWithRoles);
         }
 
+        /// <summary>
+        /// Exibe a página para editar um utilizador existente.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+
         [HttpGet]
         public async Task<IActionResult> EditUser(string? id)
         {
@@ -219,6 +279,14 @@ namespace UniShare.Controllers
 
             return View(user);
         }
+
+        /// <summary>
+        /// Atualiza os dados de um utilizador existente com os dados fornecidos, incluindo as funções selecionadas.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="model"></param>
+        /// <param name="selectedRoles"></param>
+        /// <returns></returns>
 
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -272,6 +340,12 @@ namespace UniShare.Controllers
             return View(events);
         }
 
+        /// <summary>
+        /// Exibe a página para criar um novo evento.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ApproveEvent(int id)
@@ -284,6 +358,12 @@ namespace UniShare.Controllers
             }
             return RedirectToAction("Events");
         }
+
+        /// <summary>
+        /// Rejeita um evento existente, marcando-o como rejeitado.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
 
         [HttpPost]
         [ValidateAntiForgeryToken]
