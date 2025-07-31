@@ -12,7 +12,7 @@ namespace UniShare.Controllers.Api
     /// </summary>
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize]
+    [Authorize(Roles = "Administrador")]
     public class SubjectsApiController : ControllerBase
     {
         private readonly ApplicationDbContext _context;

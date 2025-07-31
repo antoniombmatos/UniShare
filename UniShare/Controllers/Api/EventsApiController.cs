@@ -14,7 +14,7 @@ namespace UniShare.Controllers.Api
     
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize]
+    [Authorize(Roles = "Administrador")]
     public class EventsApiController : ControllerBase
     {
         private readonly ApplicationDbContext _context;

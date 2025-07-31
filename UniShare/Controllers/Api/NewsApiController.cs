@@ -13,7 +13,7 @@ namespace UniShare.Controllers.Api
     
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize]
+    [Authorize(Roles = "Administrador")]
     public class NewsApiController : ControllerBase
     {
         private readonly ApplicationDbContext _context;

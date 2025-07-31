@@ -1,18 +1,21 @@
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 using UniShare.Data;
 using UniShare.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
-    ?? "Server=(localdb)\\mssqllocaldb;Database=UniShareDB;Trusted_Connection=true;MultipleActiveResultSets=true";
+// Connection string
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ??
+    "Server=(localdb)\\mssqllocaldb;Database=UniShareDB;Trusted_Connection=true;MultipleActiveResultSets=true";
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(connectionString));
 
-// Use AddIdentity instead of AddDefaultIdentity
+// Identity
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 {
     options.SignIn.RequireConfirmedAccount = false;
@@ -25,17 +28,44 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 .AddEntityFrameworkStores<ApplicationDbContext>()
 .AddDefaultTokenProviders();
 
-// Add MVC and API services
+// JWT Authentication
+var jwtSettings = builder.Configuration.GetSection("Jwt");
+var jwtValue = jwtSettings["Key"]; 
+if (string.IsNullOrEmpty(jwtValue))
+{
+    throw new ArgumentNullException("Jwt:Admin123!", "JWT key is missing or null.");
+}
+var key = Encoding.UTF8.GetBytes(jwtValue);
+
+
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options =>
+{
+    options.RequireHttpsMetadata = true;
+    options.SaveToken = true;
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+        ValidIssuer = jwtSettings["Issuer"],
+        ValidAudience = jwtSettings["Audience"],
+        IssuerSigningKey = new SymmetricSecurityKey(key)
+    };
+});
+
+// MVC + API
 builder.Services.AddControllersWithViews()
     .AddNewtonsoftJson(options =>
         options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore);
 
 builder.Services.AddRazorPages();
-
-// Add SignalR for real-time chat
 builder.Services.AddSignalR();
-
-// Add AutoMapper
 builder.Services.AddAutoMapper(typeof(Program));
 
 // Authorization policies
@@ -49,7 +79,7 @@ builder.Services.AddAuthorization(options =>
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline
+// Middleware
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
@@ -58,23 +88,17 @@ if (!app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
-
 app.UseRouting();
 
-app.UseAuthentication();
+app.UseAuthentication(); // <----- JWT aqui
 app.UseAuthorization();
 
-// Configure routes
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
 
 app.MapRazorPages();
 
-// Map SignalR hubs (will be created later)
-// app.MapHub<ChatHub>("/chatHub");
-
-// Seed initial data
 using (var scope = app.Services.CreateScope())
 {
     await SeedData.Initialize(scope.ServiceProvider);

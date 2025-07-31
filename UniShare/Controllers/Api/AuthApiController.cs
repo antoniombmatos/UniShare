@@ -11,6 +11,7 @@ namespace UniShare.Controllers.Api
     /// <summary>
     /// Controlador de API para autenticação e registo de utilizadores.
     /// </summary>
+    [Authorize(Roles = "Administrador")]
     [Route("api/[controller]")]
     [ApiController]
     public class AuthApiController : ControllerBase

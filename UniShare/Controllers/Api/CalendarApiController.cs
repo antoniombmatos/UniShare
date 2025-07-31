@@ -11,10 +11,10 @@ namespace UniShare.Controllers.Api
     /// <summary>
     /// Controlador de API para o calendário do utilizador.
     /// </summary>
-
+    
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize]
+    [Authorize(Roles = "Administrador")]
     public class CalendarApiController : ControllerBase
     {
         private readonly ApplicationDbContext _context;

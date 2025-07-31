@@ -9,7 +9,7 @@ namespace UniShare.Controllers.Api
 {
     [Authorize(Roles = "Admin")]
     [Route("api/[controller]")]
-    [ApiController]
+    [Authorize(Roles = "Administrador")]
     public class UsersApiController : ControllerBase
     {
         private readonly UserManager<ApplicationUser> _userManager;
