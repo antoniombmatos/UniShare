@@ -8,6 +8,10 @@ using System.Security.Claims;
 
 namespace UniShare.Controllers.Api
 {
+    /// <summary>
+    /// Controlador de API para o calendário do utilizador.
+    /// </summary>
+
     [Route("api/[controller]")]
     [ApiController]
     [Authorize]
@@ -21,6 +25,11 @@ namespace UniShare.Controllers.Api
             _context = context;
             _userManager = userManager;
         }
+
+        /// <summary>
+        /// Obtém as entradas do calendário do utilizador autenticado.
+        /// </summary>
+        /// <returns></returns>
 
         [HttpGet]
         public async Task<IActionResult> GetMyCalendar()
@@ -45,6 +54,12 @@ namespace UniShare.Controllers.Api
             return Ok(entries);
         }
 
+        /// <summary>
+        /// Cria uma nova entrada no calendário do utilizador.
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        
         [HttpPost]
         public async Task<IActionResult> CreateEntry([FromBody] CreateCalendarEntryRequest request)
         {
@@ -73,6 +88,13 @@ namespace UniShare.Controllers.Api
             return Ok(new { entry.Id });
         }
 
+        /// <summary>
+        /// Atualiza uma entrada do calendário do utilizador.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateEntry(int id, [FromBody] CreateCalendarEntryRequest request)
         {
@@ -91,6 +113,12 @@ namespace UniShare.Controllers.Api
 
             return Ok(new { entry.Id });
         }
+
+        /// <summary>
+        /// Remove uma entrada do calendário do utilizador.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteEntry(int id)

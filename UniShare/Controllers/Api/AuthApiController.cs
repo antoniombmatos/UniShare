@@ -127,6 +127,17 @@ namespace UniShare.Controllers.Api
                 Course = user.Course != null ? new { user.Course.Id, user.Course.Name } : null
             });
         }
+
+        /// <summary>
+        /// Termina a sessão do utilizador autenticado.
+        /// </summary>
+        [Authorize]
+        [HttpPost("logout")]
+        public async Task<IActionResult> Logout()
+        {
+            await _signInManager.SignOutAsync();
+            return Ok(new { message = "Logout efetuado com sucesso." });
+        }
     }
 
     /// <summary>
@@ -149,4 +160,6 @@ namespace UniShare.Controllers.Api
         public string Email { get; set; } = string.Empty;
         public string Password { get; set; } = string.Empty;
     }
+
+
 }

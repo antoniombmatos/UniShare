@@ -7,6 +7,10 @@ using UniShare.Models;
 
 namespace UniShare.Controllers.Api
 {
+    /// <summary>
+    /// Controlador de API para notícias (news).
+    /// </summary>
+    
     [Route("api/[controller]")]
     [ApiController]
     [Authorize]
@@ -21,6 +25,11 @@ namespace UniShare.Controllers.Api
             _userManager = userManager;
         }
 
+        /// <summary>
+        /// Obtém a lista de notícias ativas, incluindo autor e curso (se aplicável).
+        /// </summary>
+        /// <returns></returns>
+        /// 
         [HttpGet]
         public async Task<IActionResult> GetNews()
         {
@@ -42,6 +51,12 @@ namespace UniShare.Controllers.Api
 
             return Ok(news);
         }
+
+        /// <summary>
+        /// Cria uma nova notícia.
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
 
         [HttpPost]
         [Authorize(Roles = "Professor,Admin")]

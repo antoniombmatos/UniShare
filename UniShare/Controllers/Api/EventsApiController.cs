@@ -7,6 +7,11 @@ using UniShare.Models;
 
 namespace UniShare.Controllers.Api
 {
+
+    /// <summary>
+    /// Controlador de API para eventos (events).
+    /// </summary>
+    
     [Route("api/[controller]")]
     [ApiController]
     [Authorize]
@@ -21,6 +26,11 @@ namespace UniShare.Controllers.Api
             _userManager = userManager;
         }
 
+        /// <summary>
+        /// Obtém a lista de eventos ativos, incluindo criador, curso (se aplicável) e contagem de participantes.
+        /// </summary>
+        /// <returns></returns>
+        /// 
         [HttpGet]
         public async Task<IActionResult> GetEvents()
         {
@@ -47,6 +57,12 @@ namespace UniShare.Controllers.Api
             return Ok(events);
         }
 
+        /// <summary>
+        /// Cria um novo evento.
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        
         [HttpPost]
         public async Task<IActionResult> CreateEvent([FromBody] CreateEventRequest request)
         {
@@ -70,6 +86,12 @@ namespace UniShare.Controllers.Api
             return Ok(new { ev.Id });
         }
 
+        /// <summary>
+        /// Aprova um evento pendente.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        
         [HttpPatch("{id}/approve")]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> ApproveEvent(int id)
@@ -83,6 +105,13 @@ namespace UniShare.Controllers.Api
             return Ok(new { message = "Evento aprovado." });
         }
 
+        /// <summary>
+        /// Regista a presença de um utilizador num evento específico.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        
         [HttpPost("{id}/attend")]
         public async Task<IActionResult> AttendEvent(int id, [FromBody] AttendEventRequest request)
         {

@@ -7,6 +7,10 @@ using UniShare.Models;
 
 namespace UniShare.Controllers.Api
 {
+    /// <summary>
+    /// Controlador de API para o dashboard do utilizador.
+    /// </summary>
+    
     [Route("api/[controller]")]
     [ApiController]
     [Authorize]
@@ -21,6 +25,11 @@ namespace UniShare.Controllers.Api
             _userManager = userManager;
         }
 
+        /// <summary>
+        /// Obtém o progresso do utilizador no dashboard, incluindo total de disciplinas, disciplinas concluídas, média de notas e ECTS concluídos.
+        /// </summary>
+        /// <returns></returns>
+        
         [HttpGet("my-progress")]
         public async Task<IActionResult> GetProgress()
         {
