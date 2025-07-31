@@ -9,8 +9,7 @@ using UniShare.Models;
 var builder = WebApplication.CreateBuilder(args);
 
 // 1. Ligação à base de dados
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ??
-    "Server=(localdb)\\mssqllocaldb;Database=UniShareDB;Trusted_Connection=true;MultipleActiveResultSets=true";
+var connectionString = "Server=(localdb)\\mssqllocaldb;Database=UniShareLocalDB;Trusted_Connection=True;MultipleActiveResultSets=true";
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(connectionString));
@@ -45,7 +44,21 @@ builder.Services.AddAuthorization(options =>
     options.AddPolicy("AllUsers", policy => policy.RequireRole("Aluno", "Professor", "Administrador"));
 });
 
-// 6. App
+builder.Services.ConfigureApplicationCookie(options =>
+{
+    options.Events.OnRedirectToLogin = context =>
+    {
+        context.Response.StatusCode = 401; // Unauthorized
+        return Task.CompletedTask;
+    };
+
+    options.Events.OnRedirectToAccessDenied = context =>
+    {
+        context.Response.StatusCode = 403; // Forbidden
+        return Task.CompletedTask;
+    };
+});
+
 var app = builder.Build();
 
 if (!app.Environment.IsDevelopment())
