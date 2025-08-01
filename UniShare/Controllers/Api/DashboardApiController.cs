@@ -7,10 +7,6 @@ using UniShare.Models;
 
 namespace UniShare.Controllers.Api
 {
-    /// <summary>
-    /// Controlador de API para o dashboard do utilizador.
-    /// </summary>
-    
     [Route("api/[controller]")]
     [ApiController]
     [Authorize(Roles = "Administrador")]
@@ -26,15 +22,16 @@ namespace UniShare.Controllers.Api
         }
 
         /// <summary>
-        /// Obtém o progresso do utilizador no dashboard, incluindo total de disciplinas, disciplinas concluídas, média de notas e ECTS concluídos.
+        /// Obtém dados do dashboard do utilizador, incluindo progresso, total de disciplinas, utilizadores e entradas no calendário.
         /// </summary>
         /// <returns></returns>
-        
-        [HttpGet("my-progress")]
-        public async Task<IActionResult> GetProgress()
+
+        [HttpGet]
+        public async Task<IActionResult> GetDashboardData()
         {
             var user = await _userManager.GetUserAsync(User);
 
+            // Progresso do utilizador
             var enrollments = await _context.SubjectEnrollments
                 .Include(e => e.Subject)
                 .Where(e => e.UserId == user!.Id)
@@ -42,15 +39,29 @@ namespace UniShare.Controllers.Api
 
             var completed = enrollments.Where(e => e.IsCompleted).ToList();
             var totalECTS = completed.Sum(e => e.Subject.ECTS);
+            var avgGrade = completed.Any() ? completed.Average(e => e.Grade ?? 0) : 0;
 
-            var avg = completed.Any() ? completed.Average(e => e.Grade ?? 0) : 0;
+            // Total de disciplinas na plataforma
+            var totalSubjects = await _context.Subjects.CountAsync();
+
+            // Total de utilizadores (exemplo)
+            var totalUsers = await _context.Users.CountAsync();
+
+            // Total de entradas ativas no calendário (exemplo)
+            var totalCalendarEntries = await _context.CalendarEntries.CountAsync(e => e.IsActive);
 
             return Ok(new
             {
-                TotalSubjects = enrollments.Count,
-                CompletedSubjects = completed.Count,
-                AverageGrade = Math.Round(avg, 2),
-                CompletedECTS = totalECTS
+                UserProgress = new
+                {
+                    TotalSubjects = enrollments.Count,
+                    CompletedSubjects = completed.Count,
+                    AverageGrade = Math.Round(avgGrade, 2),
+                    CompletedECTS = totalECTS
+                },
+                TotalSubjects = totalSubjects,
+                TotalUsers = totalUsers,
+                TotalCalendarEntries = totalCalendarEntries
             });
         }
     }

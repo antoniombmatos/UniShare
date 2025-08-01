@@ -196,6 +196,30 @@ namespace UniShare.Controllers.Api
                 call.GroupId
             });
         }
+
+        /// <summary>
+        /// Devolve todos os grupos de estudo ativos
+        /// </summary>
+        /// <returns></returns>
+
+        [HttpGet]
+        public async Task<IActionResult> GetAllActiveGroups()
+        {
+            var groups = await _context.StudyGroups
+                .Where(g => g.IsActive)
+                .Select(g => new
+                {
+                    g.Id,
+                    g.Name,
+                    g.Description,
+                    g.MaxMembers,
+                    MemberCount = g.Members.Count,
+                    Creator = new { g.Creator.FullName, g.Creator.Id }
+                })
+                .ToListAsync();
+
+            return Ok(groups);
+        }
     }
 
     /// <summary>
