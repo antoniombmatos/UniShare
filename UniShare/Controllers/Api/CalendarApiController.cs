@@ -4,14 +4,9 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using UniShare.Data;
 using UniShare.Models;
-using System.Security.Claims;
 
 namespace UniShare.Controllers.Api
 {
-    /// <summary>
-    /// Controlador de API para o calendário do utilizador.
-    /// </summary>
-    
     [Route("api/[controller]")]
     [ApiController]
     [Authorize(Roles = "Administrador")]
@@ -27,18 +22,17 @@ namespace UniShare.Controllers.Api
         }
 
         /// <summary>
-        /// Obtém as entradas do calendário do utilizador autenticado.
+        /// Obtém as entradas do calendário do utilizador, incluindo disciplina (se aplicável) e utilizador.
         /// </summary>
         /// <returns></returns>
 
         [HttpGet]
-        public async Task<IActionResult> GetMyCalendar()
+        public async Task<IActionResult> GetCalendarEntries()
         {
-            var user = await _userManager.GetUserAsync(User);
-
             var entries = await _context.CalendarEntries
                 .Include(e => e.Subject)
-                .Where(e => e.UserId == user!.Id && e.IsActive)
+                .Include(e => e.User)
+                .Where(e => e.IsActive)
                 .OrderBy(e => e.DateTime)
                 .Select(e => new
                 {
@@ -47,7 +41,8 @@ namespace UniShare.Controllers.Api
                     e.Description,
                     e.Type,
                     e.DateTime,
-                    Subject = e.Subject != null ? new { e.Subject.Id, e.Subject.Name } : null
+                    Subject = e.Subject != null ? new { e.Subject.Id, e.Subject.Name } : null,
+                    User = new { e.User.Id, e.User.FullName, e.User.Email }
                 })
                 .ToListAsync();
 
@@ -59,7 +54,7 @@ namespace UniShare.Controllers.Api
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
-        
+
         [HttpPost]
         public async Task<IActionResult> CreateEntry([FromBody] CreateCalendarEntryRequest request)
         {
@@ -89,12 +84,12 @@ namespace UniShare.Controllers.Api
         }
 
         /// <summary>
-        /// Atualiza uma entrada do calendário do utilizador.
+        /// Atualiza uma entrada do calendário existente.
         /// </summary>
         /// <param name="id"></param>
         /// <param name="request"></param>
         /// <returns></returns>
-        
+
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateEntry(int id, [FromBody] CreateCalendarEntryRequest request)
         {
@@ -115,11 +110,11 @@ namespace UniShare.Controllers.Api
         }
 
         /// <summary>
-        /// Remove uma entrada do calendário do utilizador.
+        /// Remove uma entrada do calendário.
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
-
+        
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteEntry(int id)
         {
@@ -135,7 +130,6 @@ namespace UniShare.Controllers.Api
         }
     }
 
-    // DTO reutilizável para criar/editar entradas
     public class CreateCalendarEntryRequest
     {
         public int? SubjectId { get; set; }

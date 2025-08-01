@@ -37,6 +37,29 @@ namespace UniShare.Controllers.Api
         }
 
         /// <summary>
+        /// Obtém a lista de utilizadores registados, incluindo detalhes do curso (se aplicável).
+        /// </summary>
+        /// <returns></returns>
+
+        [HttpGet]
+        public async Task<IActionResult> GetUsers()
+        {
+            var users = await _userManager.Users
+                .Include(u => u.Course)
+                .Select(u => new
+                {
+                    u.Id,
+                    u.FullName,
+                    u.Email,
+                    u.StudentNumber,
+                    Course = u.Course != null ? new { u.Course.Id, u.Course.Name } : null
+                })
+                .ToListAsync();
+
+            return Ok(users);
+        }
+
+        /// <summary>
         /// Regista um novo utilizador.
         /// </summary>
         /// <param name="request"></param>
