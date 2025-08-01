@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Microsoft.AspNetCore.Mvc.Rendering;
+using System.ComponentModel.DataAnnotations;
 
 namespace UniShare.ViewModels
 {
@@ -28,5 +29,10 @@ namespace UniShare.ViewModels
         [Required(ErrorMessage = "O código de acesso é obrigatório.")]
         [Display(Name = "Código de Acesso de Professor")]
         public string AccessCode { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "O curso é obrigatório.")]
+        [Display(Name = "Curso")] 
+        public int CourseId { get; set; }
+        public IEnumerable<SelectListItem>? AvailableCourses { get; set; }
     }
 }

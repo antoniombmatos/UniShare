@@ -176,7 +176,22 @@ namespace UniShare.Controllers
         [HttpGet]
         public IActionResult RegisterProfessor()
         {
-            return View();
+            var courses = _context.Courses
+                .Where(c => c.IsActive)
+                .OrderBy(c => c.Name)
+                .Select(c => new SelectListItem
+                {
+                    Value = c.Id.ToString(),
+                    Text = c.Name
+                })
+                .ToList();
+
+            var model = new RegisterProfessorViewModel
+            {
+                AvailableCourses = courses
+            };
+
+            return View(model);
         }
 
         /// <summary>
@@ -190,11 +205,32 @@ namespace UniShare.Controllers
         public async Task<IActionResult> RegisterProfessor(RegisterProfessorViewModel model)
         {
             if (!ModelState.IsValid)
+            {
+                model.AvailableCourses = await _context.Courses
+                    .Where(c => c.IsActive)
+                    .OrderBy(c => c.Name)
+                    .Select(c => new SelectListItem
+                    {
+                        Value = c.Id.ToString(),
+                        Text = c.Name
+                    })
+                    .ToListAsync();
                 return View(model);
+            }
 
             if (model.AccessCode != ProfessorAccessCode)
             {
                 ModelState.AddModelError("AccessCode", "Código de acesso inválido.");
+
+                model.AvailableCourses = await _context.Courses
+                    .Where(c => c.IsActive)
+                    .OrderBy(c => c.Name)
+                    .Select(c => new SelectListItem
+                    {
+                        Value = c.Id.ToString(),
+                        Text = c.Name
+                    })
+                    .ToListAsync();
                 return View(model);
             }
 
@@ -202,6 +238,16 @@ namespace UniShare.Controllers
             if (existingUser != null)
             {
                 ModelState.AddModelError("Email", "Já existe uma conta com este email.");
+
+                model.AvailableCourses = await _context.Courses
+                    .Where(c => c.IsActive)
+                    .OrderBy(c => c.Name)
+                    .Select(c => new SelectListItem
+                    {
+                        Value = c.Id.ToString(),
+                        Text = c.Name
+                    })
+                    .ToListAsync();
                 return View(model);
             }
 
@@ -210,7 +256,8 @@ namespace UniShare.Controllers
                 UserName = model.Email,
                 Email = model.Email,
                 FullName = model.FullName,
-                EmailConfirmed = true
+                EmailConfirmed = true,
+                CourseId = model.CourseId
             };
 
             var result = await _userManager.CreateAsync(user, model.Password);
@@ -224,6 +271,16 @@ namespace UniShare.Controllers
 
             foreach (var error in result.Errors)
                 ModelState.AddModelError(string.Empty, error.Description);
+
+            model.AvailableCourses = await _context.Courses
+                .Where(c => c.IsActive)
+                .OrderBy(c => c.Name)
+                .Select(c => new SelectListItem
+                {
+                    Value = c.Id.ToString(),
+                    Text = c.Name
+                })
+                .ToListAsync();
 
             return View(model);
         }
