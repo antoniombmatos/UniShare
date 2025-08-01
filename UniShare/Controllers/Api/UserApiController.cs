@@ -7,9 +7,9 @@ using UniShare.Models;
 
 namespace UniShare.Controllers.Api
 {
-    [Authorize(Roles = "Admin")]
     [Route("api/[controller]")]
-    [Authorize(Roles = "Administrador")]
+    [ApiController]
+    [Authorize(Roles = "Administrador")] // Usa só esta, para evitar conflito
     public class UsersApiController : ControllerBase
     {
         private readonly UserManager<ApplicationUser> _userManager;
@@ -21,6 +21,9 @@ namespace UniShare.Controllers.Api
             _context = context;
         }
 
+        /// <summary>
+        /// Obtém todos os utilizadores.
+        /// </summary>
         [HttpGet]
         public async Task<IActionResult> GetAllUsers()
         {
@@ -39,6 +42,9 @@ namespace UniShare.Controllers.Api
             return Ok(users);
         }
 
+        /// <summary>
+        /// Elimina um utilizador pelo ID.
+        /// </summary>
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteUser(string id)
         {
@@ -46,7 +52,12 @@ namespace UniShare.Controllers.Api
             if (user == null)
                 return NotFound();
 
-            await _userManager.DeleteAsync(user);
+            var result = await _userManager.DeleteAsync(user);
+            if (!result.Succeeded)
+            {
+                return BadRequest(new { message = "Erro ao eliminar o utilizador." });
+            }
+
             return Ok(new { message = "Utilizador eliminado com sucesso." });
         }
     }

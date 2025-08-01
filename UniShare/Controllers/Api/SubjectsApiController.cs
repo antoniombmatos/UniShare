@@ -25,10 +25,30 @@ namespace UniShare.Controllers.Api
         }
 
         /// <summary>
+        /// Obtém todas as disciplinas ativas.
+        /// </summary>
+        [HttpGet]
+        public async Task<IActionResult> GetAllSubjects()
+        {
+            var subjects = await _context.Subjects
+                .Include(s => s.Course)
+                .Where(s => s.IsActive) // ajuste conforme seu modelo
+                .Select(s => new
+                {
+                    s.Id,
+                    s.Name,
+                    s.Code,
+                    Course = s.Course.Name
+                })
+                .ToListAsync();
+
+            return Ok(subjects);
+        }
+
+        /// <summary>
         /// Obtém as disciplinas em que o utilizador está inscrito.
         /// </summary>
         /// <returns></returns>
-        /// 
         [HttpGet("enrolled")]
         public async Task<IActionResult> GetEnrolledSubjects()
         {
@@ -55,9 +75,6 @@ namespace UniShare.Controllers.Api
         /// <summary>
         /// Inscreve o utilizador em uma disciplina específica.
         /// </summary>
-        /// <param name="request"></param>
-        /// <returns></returns>
-
         [HttpPost("enroll")]
         public async Task<IActionResult> EnrollInSubject([FromBody] EnrollRequest request)
         {
@@ -94,10 +111,6 @@ namespace UniShare.Controllers.Api
         /// <summary>
         /// Marca uma disciplina como concluída e atribui uma nota.
         /// </summary>
-        /// <param name="id"></param>
-        /// <param name="request"></param>
-        /// <returns></returns>
-
         [HttpPatch("enrollment/{id}/complete")]
         public async Task<IActionResult> CompleteSubject(int id, [FromBody] CompleteRequest request)
         {
@@ -117,11 +130,6 @@ namespace UniShare.Controllers.Api
         /// <summary>
         /// Obtém os posts de uma disciplina específica.
         /// </summary>
-        /// <param name="subjectId"></param>
-        /// <param name="page"></param>
-        /// <param name="pageSize"></param>
-        /// <returns></returns>
-
         [HttpGet("{subjectId}/posts")]
         public async Task<IActionResult> GetPosts(int subjectId, int page = 1, int pageSize = 10)
         {
@@ -167,10 +175,6 @@ namespace UniShare.Controllers.Api
         /// <summary>
         /// Cria um novo post em uma disciplina.
         /// </summary>
-        /// <param name="subjectId"></param>
-        /// <param name="request"></param>
-        /// <returns></returns>
-
         [HttpPost("{subjectId}/posts")]
         public async Task<IActionResult> CreatePost(int subjectId, [FromBody] CreatePostRequest request)
         {
@@ -212,10 +216,6 @@ namespace UniShare.Controllers.Api
         /// <summary>
         /// Cria um novo comentário em um post de disciplina.
         /// </summary>
-        /// <param name="postId"></param>
-        /// <param name="request"></param>
-        /// <returns></returns>
-
         [HttpPost("posts/{postId}/comments")]
         public async Task<IActionResult> CreateComment(int postId, [FromBody] CreateCommentRequest request)
         {
@@ -256,10 +256,6 @@ namespace UniShare.Controllers.Api
             });
         }
 
-        /// <summary>
-        /// Request model for creating a new post in a subject.
-        /// </summary>
-        
         public class CreatePostRequest
         {
             public string Content { get; set; } = string.Empty;
