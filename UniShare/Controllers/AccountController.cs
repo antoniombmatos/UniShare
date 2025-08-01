@@ -165,5 +165,67 @@ namespace UniShare.Controllers
                 return Redirect(returnUrl);
             return RedirectToAction("Index", "Home");
         }
+
+        private const string ProfessorAccessCode = "PROF-IPT-7aX39T#2025"; // podes mudar para vir de config
+
+        /// <summary>
+        /// Exibe o formulário de registo de professor.
+        /// </summary>
+        /// <returns></returns>
+
+        [HttpGet]
+        public IActionResult RegisterProfessor()
+        {
+            return View();
+        }
+
+        /// <summary>
+        /// Regista um novo professor.
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns></returns>
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> RegisterProfessor(RegisterProfessorViewModel model)
+        {
+            if (!ModelState.IsValid)
+                return View(model);
+
+            if (model.AccessCode != ProfessorAccessCode)
+            {
+                ModelState.AddModelError("AccessCode", "Código de acesso inválido.");
+                return View(model);
+            }
+
+            var existingUser = await _userManager.FindByEmailAsync(model.Email);
+            if (existingUser != null)
+            {
+                ModelState.AddModelError("Email", "Já existe uma conta com este email.");
+                return View(model);
+            }
+
+            var user = new ApplicationUser
+            {
+                UserName = model.Email,
+                Email = model.Email,
+                FullName = model.FullName,
+                EmailConfirmed = true
+            };
+
+            var result = await _userManager.CreateAsync(user, model.Password);
+
+            if (result.Succeeded)
+            {
+                await _userManager.AddToRoleAsync(user, "Professor");
+                await _signInManager.SignInAsync(user, isPersistent: false);
+                return RedirectToAction("Index", "Subjects");
+            }
+
+            foreach (var error in result.Errors)
+                ModelState.AddModelError(string.Empty, error.Description);
+
+            return View(model);
+        }
     }
 }
