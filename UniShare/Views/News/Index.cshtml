@@ -1,0 +1,33 @@
+﻿@model List<UniShare.Models.News>
+@{
+    ViewData["Title"] = "Notícias";
+}
+
+<h2 class="mb-4"><i class="bi bi-newspaper me-2"></i>Notícias</h2>
+
+@if (!Model.Any())
+{
+    <p class="text-muted">Nenhuma notícia disponível.</p>
+}
+else
+{
+    <div class="row">
+        @foreach (var item in Model)
+        {
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="card h-100 border-0 shadow-sm bg-dark text-light">
+                    <div class="card-body">
+                        <h5 class="card-title">@item.Title</h5>
+                        <small class="text-muted">@item.PublicationDate.ToString("dd/MM/yyyy")</small>
+                        <p class="mt-2">@item.Content.Substring(0, Math.Min(item.Content.Length, 100))...</p>
+
+                        @if (item.Course != null)
+                        {
+                            <span class="badge bg-info text-dark">@item.Course.Name</span>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}

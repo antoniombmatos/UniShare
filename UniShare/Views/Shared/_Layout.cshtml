@@ -38,6 +38,11 @@
                                     <i class="bi bi-people me-1"></i>Grupos de Estudo
                                 </a>
                             </li>
+                            <li class="nav-item">
+                                <a class="nav-link" asp-area="" asp-controller="News" asp-action="Index">
+                                    <i class="bi bi-newspaper me-1"></i>Notícias
+                                </a>
+                            </li>
                             @if (User.IsInRole("Administrador"))
                             {
                             }
@@ -107,6 +112,11 @@
                 <div class="col-md-6">
                     <h6 class="fw-bold">UniShare</h6>
                     <p class="small">Plataforma de partilha académica para estudantes universitários.</p>
+                    <p class="small">
+                        <a class="link-light" asp-area="" asp-controller="About" asp-action="Index">
+                            <i class="bi bi-info-circle me-1"></i>Sobre o Projeto
+                        </a>
+                    </p>
                 </div>
                 <div class="col-md-6 text-md-end">
                     <p class="small">&copy; 2024 UniShare. Todos os direitos reservados.</p>
