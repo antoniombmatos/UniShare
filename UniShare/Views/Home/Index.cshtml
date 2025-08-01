@@ -189,11 +189,97 @@
         </div>
     </div>
 }
+}
 
-<!-- News Section for all users -->
+@if (ViewBag.IsProfessor)
+{
+    <!-- NOVO: DASHBOARD DE PROFESSOR -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-white">
+            <h5 class="card-title mb-0"><i class="bi bi-journal-text me-2"></i>Minhas Disciplinas</h5>
+        </div>
+        <div class="card-body">
+            @if (ViewBag.ProfessorSubjects != null && ((List<UniShare.Models.Subject>)ViewBag.ProfessorSubjects).Any())
+            {
+                <ul class="list-group">
+                    @foreach (var subject in (List<UniShare.Models.Subject>)ViewBag.ProfessorSubjects)
+                    {
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            @subject.Name
+                            <a asp-controller="Subjects" asp-action="Details" asp-route-id="@subject.Id" class="btn btn-sm btn-outline-primary">Ver</a>
+                        </li>
+                    }
+                </ul>
+            }
+            else
+            {
+                <div class="text-muted">Ainda não criou nenhuma disciplina.</div>
+                <a asp-controller="Subjects" asp-action="Create" class="btn btn-success mt-3">Criar Disciplina</a>
+            }
+        </div>
+    </div>
+}
+
+@if (ViewBag.IsAdmin)
+{
+    <!-- NOVO: DASHBOARD DE ADMIN -->
+    <div class="row g-4">
+        <div class="col-md-3">
+            <div class="card shadow-sm text-center p-3">
+                <h6>Total Utilizadores</h6>
+                <h3>@ViewBag.TotalUsers</h3>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card shadow-sm text-center p-3">
+                <h6>Total Cursos</h6>
+                <h3>@ViewBag.TotalCourses</h3>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card shadow-sm text-center p-3">
+                <h6>Total Disciplinas</h6>
+                <h3>@ViewBag.TotalSubjects</h3>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card shadow-sm text-center p-3">
+                <h6>Notícias</h6>
+                <h3>@ViewBag.TotalNews</h3>
+            </div>
+        </div>
+    </div>
+    <div class="mt-4">
+        <h5><i class="bi bi-plus-circle me-2"></i>Ações rápidas</h5>
+
+        <div class="d-flex flex-wrap gap-3 mt-3">
+            <a asp-controller="Courses" asp-action="Create" class="btn btn-success">
+                <i class="bi bi-journal-plus me-1"></i> Criar Curso
+            </a>
+
+            <a asp-controller="Subjects" asp-action="Create" class="btn btn-primary">
+                <i class="bi bi-journal-text me-1"></i> Criar Disciplina
+            </a>          
+        </div>
+    </div>
+    <div class="mt-4">
+        <h5><i class="bi bi-newspaper me-2"></i>Últimas Notícias</h5>
+        <ul class="list-group">
+            @foreach (var news in (List<UniShare.Models.News>)ViewBag.RecentNews)
+            {
+                <li class="list-group-item">
+                    <strong>@news.Title</strong> — @news.PublicationDate.ToString("dd/MM/yyyy")
+                </li>
+            }
+        </ul>
+        <a asp-controller="News" asp-action="Create" class="btn btn-outline-primary mt-3">Criar Notícia</a>
+    </div>
+}
+
+<!-- Secção comum de notícias -->
 @if (ViewBag.News != null && ((List<UniShare.Models.News>)ViewBag.News).Any())
 {
-    <div class="row mt-4">
+    <div class="row mt-5">
         <div class="col-12">
             <div class="card border-0 shadow-sm">
                 <div class="card-header bg-white">
@@ -211,7 +297,7 @@
                                         <h6 class="card-title">@news.Title</h6>
                                         <p class="card-text small">@news.Content.Substring(0, Math.Min(100, news.Content.Length))...</p>
                                         <small class="text-muted">
-                                            @news.PublicationDate.ToString("dd/MM/yyyy") 
+                                            @news.PublicationDate.ToString("dd/MM/yyyy")
                                             @if (news.Course != null)
                                             {
                                                 <span>• @news.Course.Name</span>
@@ -229,12 +315,10 @@
 }
 
 <div class="row mt-4">
-    <div class="col-12">
-        <div class="text-center">
-            <p class="text-muted">
-                <i class="bi bi-lightbulb me-1"></i>
-                Explore as funcionalidades da plataforma através do menu de navegação.
-            </p>
-        </div>
+    <div class="col-12 text-center">
+        <p class="text-muted">
+            <i class="bi bi-lightbulb me-1"></i>
+            Explore as funcionalidades da plataforma através do menu de navegação.
+        </p>
     </div>
 </div>

@@ -22,25 +22,21 @@ namespace UniShare.Controllers
         public async Task<IActionResult> Index()
         {
             if (!User.Identity?.IsAuthenticated ?? true)
-            {
                 return View("Landing");
-            }
 
             var user = await _userManager.GetUserAsync(User);
             if (user == null)
-            {
                 return RedirectToAction("Login", "Account");
-            }
 
             var userRoles = await _userManager.GetRolesAsync(user);
-            var isStudent = userRoles.Contains("Aluno");
 
             ViewBag.UserName = user.FullName;
-            ViewBag.IsStudent = isStudent;
+            ViewBag.IsStudent = userRoles.Contains("Aluno");
+            ViewBag.IsProfessor = userRoles.Contains("Professor");
+            ViewBag.IsAdmin = userRoles.Contains("Administrador");
 
-            if (isStudent)
+            if (ViewBag.IsStudent)
             {
-                // Student dashboard data
                 var enrollments = await _context.SubjectEnrollments
                     .Include(e => e.Subject)
                     .Where(e => e.UserId == user.Id && e.Subject.IsActive)
@@ -56,8 +52,7 @@ namespace UniShare.Controllers
                 ViewBag.AverageGrade = Math.Round(averageGrade, 2);
                 ViewBag.ProgressPercentage = totalECTS > 0 ? (completedECTS * 100 / totalECTS) : 0;
 
-                // Recent posts from enrolled subjects
-                var recentPosts = await _context.Posts
+                ViewBag.RecentPosts = await _context.Posts
                     .Include(p => p.Author)
                     .Include(p => p.Subject)
                     .Where(p => enrollments.Select(e => e.SubjectId).Contains(p.SubjectId) && p.IsActive)
@@ -65,29 +60,45 @@ namespace UniShare.Controllers
                     .Take(5)
                     .ToListAsync();
 
-                ViewBag.RecentPosts = recentPosts;
-
-                // Upcoming calendar entries
-                var upcomingEvents = await _context.CalendarEntries
+                ViewBag.UpcomingEvents = await _context.CalendarEntries
                     .Include(c => c.Subject)
                     .Where(c => c.UserId == user.Id && c.DateTime > DateTime.Now && c.IsActive)
                     .OrderBy(c => c.DateTime)
                     .Take(5)
                     .ToListAsync();
-
-                ViewBag.UpcomingEvents = upcomingEvents;
             }
 
-            // News for all users
-            var news = await _context.News
-                .Include(n => n.Author)
+            if (ViewBag.IsProfessor)
+            {
+                ViewBag.ProfessorSubjects = await _context.Subjects
+                    .Where(s => s.ProfessorId == user.Id && s.IsActive)
+                    .ToListAsync();
+
+                ViewBag.UpcomingEvents = await _context.CalendarEntries
+                    .Where(e => e.UserId == user.Id && e.DateTime > DateTime.Now && e.IsActive)
+                    .OrderBy(e => e.DateTime)
+                    .Take(5)
+                    .ToListAsync();
+            }
+
+            if (ViewBag.IsAdmin)
+            {
+                ViewBag.TotalUsers = await _context.Users.CountAsync();
+                ViewBag.TotalCourses = await _context.Courses.CountAsync();
+                ViewBag.TotalSubjects = await _context.Subjects.CountAsync();
+                ViewBag.TotalNews = await _context.News.CountAsync();
+                ViewBag.RecentNews = await _context.News
+                    .OrderByDescending(n => n.PublicationDate)
+                    .Take(5)
+                    .ToListAsync();
+            }
+
+            ViewBag.News = await _context.News
                 .Include(n => n.Course)
                 .Where(n => n.IsActive && (n.CourseId == null || n.CourseId == user.CourseId))
                 .OrderByDescending(n => n.PublicationDate)
                 .Take(3)
                 .ToListAsync();
-
-            ViewBag.News = news;
 
             return View();
         }
