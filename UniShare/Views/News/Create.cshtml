@@ -1,8 +1,13 @@
 ﻿@model UniShare.Models.News
+@{
+    ViewData["Title"] = "Gerir Notícias";
+}
 
-<h2>Criar Notícia</h2>
+<h2>Gerir Notícias</h2>
 
-<form asp-action="Create" method="post">
+<form id="newsForm" asp-action="Save" method="post">
+    <input type="hidden" asp-for="Id" />
+
     <div class="mb-3">
         <label asp-for="Title" class="form-label"></label>
         <input asp-for="Title" class="form-control" />
@@ -21,5 +26,53 @@
         <span asp-validation-for="CourseId" class="text-danger"></span>
     </div>
 
-    <button type="submit" class="btn btn-primary">Criar Notícia</button>
+    <button type="submit" class="btn btn-primary">Guardar</button>
+    <button type="reset" class="btn btn-secondary" onclick="resetForm()">Limpar</button>
 </form>
+
+<hr />
+
+<h3>Lista de Notícias</h3>
+<table class="table">
+    <thead>
+        <tr>
+            <th>Título</th>
+            <th>Curso</th>
+            <th>Data</th>
+            <th>Ações</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in ViewBag.NewsList as List<UniShare.Models.News>)
+        {
+            <tr>
+                <td>@item.Title</td>
+                <td>@item.Course?.Name</td>
+                <td>@item.PublicationDate.ToString("dd/MM/yyyy")</td>
+                <td>
+                    <button type="button" class="btn btn-sm btn-warning" onclick="editNews(@item.Id, '@item.Title', '@item.Content'.replace(/'/g, " &#39;"), @item.CourseId)">Editar</button>
+                    <form asp-action="Delete" method="post" style="display:inline;">
+                        <input type="hidden" name="id" value="@item.Id" />
+                        <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Tem certeza que deseja apagar?')">Apagar</button>
+                    </form>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@section Scripts {
+    <script>
+        function editNews(id, title, content, courseId) {
+            document.querySelector('[name="Id"]').value = id;
+            document.querySelector('[name="Title"]').value = title;
+            document.querySelector('[name="Content"]').value = content;
+            document.querySelector('[name="CourseId"]').value = courseId;
+        }
+
+        function resetForm() {
+            document.getElementById('newsForm').reset();
+            document.querySelector('[name="Id"]').value = 0;
+        }
+    </script>
+}

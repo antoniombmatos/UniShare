@@ -21,6 +21,14 @@ namespace UniShare.Controllers
             _userManager = userManager;
         }
 
+        [Authorize(Roles = "Administrador")]
+        [HttpGet]
+        public IActionResult CreateNewsList() // Renamed from "Create" to "CreateNewsList"
+        {
+            var news = _context.News.ToList();
+            return View(news);
+        }
+
         // GET: /News
         public async Task<IActionResult> Index()
         {

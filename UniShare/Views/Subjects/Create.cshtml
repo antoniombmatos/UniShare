@@ -1,22 +1,124 @@
-﻿@model UniShare.Models.Subject
+﻿@model IEnumerable<UniShare.Models.Subject>
+@{
+    ViewData["Title"] = "Gerir Disciplinas";
+}
 
-<h2>Criar Disciplina</h2>
+<h2>Gerir Disciplinas</h2>
+<hr />
 
-<form asp-action="CreateByProfessor" method="post">
-    <div class="mb-3">
-        <label asp-for="Name"></label>
-        <input asp-for="Name" class="form-control" />
+<div class="row">
+    <div class="col-md-4">
+        <h4 id="form-title">Criar Nova Disciplina</h4>
+        <form id="subject-form" method="post">
+            <input type="hidden" id="Id" name="Id" />
+
+            <div class="mb-3">
+                <label for="Name" class="form-label">Nome</label>
+                <input type="text" id="Name" name="Name" class="form-control" required />
+            </div>
+
+            <div class="mb-3">
+                <label for="Description" class="form-label">Descrição</label>
+                <textarea id="Description" name="Description" class="form-control"></textarea>
+            </div>
+
+            <div class="mb-3">
+                <label for="Code" class="form-label">Código</label>
+                <input type="text" id="Code" name="Code" class="form-control" required maxlength="10" />
+            </div>
+
+            <div class="mb-3">
+                <label for="ECTS" class="form-label">ECTS</label>
+                <input type="number" id="ECTS" name="ECTS" class="form-control" />
+            </div>
+
+            <div class="mb-3">
+                <label for="Semester" class="form-label">Semestre</label>
+                <input type="number" id="Semester" name="Semester" class="form-control" />
+            </div>
+
+            <div class="mb-3">
+                <label for="Year" class="form-label">Ano</label>
+                <input type="number" id="Year" name="Year" class="form-control" />
+            </div>
+
+            <div class="mb-3">
+                <label for="CourseId" class="form-label">Curso</label>
+                <select id="CourseId" name="CourseId" class="form-control">
+                    @foreach (var course in ViewBag.Courses)
+                    {
+                        <option value="@course.Value">@course.Text</option>
+                    }
+                </select>
+            </div>
+
+            <button type="submit" class="btn btn-primary" id="submit-btn">Criar</button>
+            <button type="button" class="btn btn-secondary d-none" id="cancel-edit">Cancelar</button>
+        </form>
     </div>
 
-    <div class="mb-3">
-        <label asp-for="Description"></label>
-        <textarea asp-for="Description" class="form-control"></textarea>
+    <div class="col-md-8">
+        <h4>Lista de Disciplinas</h4>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Nome</th>
+                    <th>Código</th>
+                    <th>Curso</th>
+                    <th>ECTS</th>
+                    <th>Ano/Semestre</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var subject in Model)
+                {
+                    <tr>
+                        <td>@subject.Name</td>
+                        <td>@subject.Code</td>
+                        <td>@subject.Course?.Name</td>
+                        <td>@subject.ECTS</td>
+                        <td>@subject.Year / @subject.Semester</td>
+                        <td>
+                            <button type="button" class="btn btn-sm btn-warning edit-btn" data-subject='@Html.Raw(System.Text.Json.JsonSerializer.Serialize(subject))'>Editar</button>
+                            <form asp-action="Delete" asp-route-id="@subject.Id" method="post" style="display:inline">
+                                <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Tem a certeza que quer apagar?')">Apagar</button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
     </div>
+</div>
 
-    <div class="mb-3">
-        <label>Curso</label>
-        <select asp-for="CourseId" asp-items="ViewBag.Courses" class="form-control"></select>
-    </div>
+@section Scripts {
+    <script>
+        document.querySelectorAll('.edit-btn').forEach(btn => {
+            btn.addEventListener('click', function () {
+                let subject = JSON.parse(this.dataset.subject);
 
-    <button class="btn btn-primary" type="submit">Criar Disciplina</button>
-</form>
+                document.getElementById('form-title').innerText = 'Editar Disciplina';
+                document.getElementById('submit-btn').innerText = 'Guardar';
+                document.getElementById('cancel-edit').classList.remove('d-none');
+
+                for (let key in subject) {
+                    if (document.getElementById(key)) {
+                        document.getElementById(key).value = subject[key];
+                    }
+                }
+
+                document.getElementById('subject-form').setAttribute('action', '/Subjects/Edit/' + subject.id);
+            });
+        });
+
+        document.getElementById('cancel-edit').addEventListener('click', function () {
+            document.getElementById('form-title').innerText = 'Criar Nova Disciplina';
+            document.getElementById('submit-btn').innerText = 'Criar';
+            this.classList.add('d-none');
+
+            document.getElementById('subject-form').setAttribute('action', '/Subjects/Create');
+            document.getElementById('subject-form').reset();
+        });
+    </script>
+}

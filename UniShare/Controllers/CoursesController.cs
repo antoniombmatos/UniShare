@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Threading.Tasks;
 using UniShare.Data;
@@ -16,10 +17,12 @@ namespace UniShare.Controllers
         }
 
         // GET: /Courses/Create
+        [Authorize(Roles = "Administrador")]
         [HttpGet]
         public IActionResult Create()
         {
-            return View();
+            var courses = _context.Courses.ToList();
+            return View(courses);
         }
 
         // POST: /Courses/Create
@@ -31,16 +34,59 @@ namespace UniShare.Controllers
             {
                 _context.Courses.Add(course);
                 await _context.SaveChangesAsync();
-                return RedirectToAction("Index", "Courses"); // Ou outra página que liste cursos
+                return RedirectToAction("Index");
             }
             return View(course);
         }
 
-        // GET: /Courses/Index (lista todos)
+        // GET: /Courses/Index
         public async Task<IActionResult> Index()
         {
             var courses = await _context.Courses.ToListAsync();
             return View(courses);
+        }
+
+        // GET: /Courses/Edit/5
+        public async Task<IActionResult> Edit(int id)
+        {
+            var course = await _context.Courses.FindAsync(id);
+            if (course == null)
+                return NotFound();
+
+            return View(course);
+        }
+
+        // POST: /Courses/Edit/5
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(int id, Course course)
+        {
+            if (id != course.Id)
+                return NotFound();
+
+            if (ModelState.IsValid)
+            {
+                _context.Update(course);
+                await _context.SaveChangesAsync();
+                return RedirectToAction(nameof(Index));
+            }
+
+            return View(course);
+        }
+
+        // POST: /Courses/Delete/5
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Delete(int id)
+        {
+            var course = await _context.Courses.FindAsync(id);
+            if (course != null)
+            {
+                _context.Courses.Remove(course);
+                await _context.SaveChangesAsync();
+            }
+
+            return RedirectToAction(nameof(Index));
         }
     }
 }

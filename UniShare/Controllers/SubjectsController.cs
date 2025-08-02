@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using UniShare.Data;
 using UniShare.Models;
 using System.Text.RegularExpressions;
+using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace UniShare.Controllers
 {
@@ -292,11 +293,13 @@ namespace UniShare.Controllers
             return View(subjects);
         }
 
-        [Authorize(Roles = "Professor,Administrador")] // Opcional: só quem pode criar
+        [Authorize(Roles = "Professor,Administrador")]
         [HttpGet]
         public IActionResult Create()
         {
-            return View(); // Vai procurar Views/Subjects/Create.cshtml
+            ViewBag.Courses = new SelectList(_context.Courses, "Id", "Name");
+            var subjects = _context.Subjects.Include(s => s.Course).ToList();
+            return View(subjects);
         }
 
         [Authorize(Roles = "Professor,Administrador")]
@@ -304,12 +307,60 @@ namespace UniShare.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(Subject subject)
         {
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
-                _context.Subjects.Add(subject);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+                ViewBag.Courses = new SelectList(_context.Courses, "Id", "Name", subject.CourseId);
+                return View(subject);
             }
+
+            subject.CreatedAt = DateTime.UtcNow;
+            _context.Subjects.Add(subject);
+            await _context.SaveChangesAsync();
+            return RedirectToAction(nameof(Index));
+        }
+
+        [Authorize(Roles = "Professor,Administrador")]
+        [HttpGet]
+        public async Task<IActionResult> Edit(int? id)
+        {
+            if (id == null) return NotFound();
+
+            var subject = await _context.Subjects.FindAsync(id);
+            if (subject == null) return NotFound();
+
+            ViewBag.Courses = new SelectList(_context.Courses, "Id", "Name", subject.CourseId);
+            return View(subject);
+        }
+
+        [Authorize(Roles = "Professor,Administrador")]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(int id, Subject subject)
+        {
+            if (id != subject.Id) return NotFound();
+
+            if (!ModelState.IsValid)
+            {
+                ViewBag.Courses = new SelectList(_context.Courses, "Id", "Name", subject.CourseId);
+                return View(subject);
+            }
+
+            _context.Update(subject);
+            await _context.SaveChangesAsync();
+            return RedirectToAction(nameof(Index));
+        }
+
+        [Authorize]
+        public async Task<IActionResult> DetailsBasic(int? id)
+        {
+            if (id == null) return NotFound();
+
+            var subject = await _context.Subjects
+                .Include(s => s.Course)
+                .Include(s => s.Professor)
+                .FirstOrDefaultAsync(s => s.Id == id);
+
+            if (subject == null) return NotFound();
 
             return View(subject);
         }

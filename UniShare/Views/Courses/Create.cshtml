@@ -1,13 +1,85 @@
-﻿@model UniShare.Models.Course
+﻿@model IEnumerable<UniShare.Models.Course>
+@using UniShare.Models
 
-<h2>Criar Curso</h2>
+@{
+    ViewData["Title"] = "Gestão de Cursos";
+    var emptyCourse = new Course(); // Para usar no formulário de criação
+}
 
-<form asp-action="Create" method="post">
-    <div class="mb-3">
-        <label asp-for="Name" class="form-label"></label>
-        <input asp-for="Name" class="form-control" />
-        <span asp-validation-for="Name" class="text-danger"></span>
+<h2>Gestão de Cursos</h2>
+
+<!-- Formulário para Criar Curso -->
+<h4 class="mt-4">Criar Novo Curso</h4>
+
+<form asp-action="Create" method="post" class="mb-5">
+    <div class="row g-3">
+        <div class="col-md-4">
+            <label asp-for="@emptyCourse.Name" class="form-label">Nome</label>
+            <input asp-for="@emptyCourse.Name" class="form-control" name="Name" />
+        </div>
+        <div class="col-md-4">
+            <label asp-for="@emptyCourse.Code" class="form-label">Código</label>
+            <input asp-for="@emptyCourse.Code" class="form-control" name="Code" />
+        </div>
+        <div class="col-md-4">
+            <label asp-for="@emptyCourse.TotalECTS" class="form-label">Total ECTS</label>
+            <input asp-for="@emptyCourse.TotalECTS" class="form-control" name="TotalECTS" type="number" />
+        </div>
+        <div class="col-12">
+            <label asp-for="@emptyCourse.Description" class="form-label">Descrição</label>
+            <textarea asp-for="@emptyCourse.Description" class="form-control" name="Description"></textarea>
+        </div>
+        <div class="col-12 form-check">
+            <input asp-for="@emptyCourse.IsActive" class="form-check-input" name="IsActive" type="checkbox" checked />
+            <label asp-for="@emptyCourse.IsActive" class="form-check-label">Ativo</label>
+        </div>
+        <div class="col-12">
+            <button type="submit" class="btn btn-success mt-2">Criar Curso</button>
+        </div>
     </div>
-
-    <button type="submit" class="btn btn-primary">Criar Curso</button>
 </form>
+
+<!-- Tabela de Cursos Existentes -->
+<h4>Cursos Existentes</h4>
+
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Nome</th>
+            <th>Descrição</th>
+            <th>Código</th>
+            <th>ECTS</th>
+            <th>Ativo</th>
+            <th>Data de Criação</th>
+            <th>Ações</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var course in Model)
+        {
+            <tr>
+                <td><input type="text" name="Name" value="@course.Name" class="form-control" form="edit-form-@course.Id" /></td>
+                <td><input type="text" name="Description" value="@course.Description" class="form-control" form="edit-form-@course.Id" /></td>
+                <td><input type="text" name="Code" value="@course.Code" class="form-control" form="edit-form-@course.Id" /></td>
+                <td><input type="number" name="TotalECTS" value="@course.TotalECTS" class="form-control" form="edit-form-@course.Id" /></td>
+                <td class="text-center">
+                    <input type="checkbox" name="IsActive" class="form-check-input" form="edit-form-@course.Id" @(course.IsActive ? "checked" : "") />
+                </td>
+                <td>@course.CreatedAt.ToString("dd/MM/yyyy")</td>
+                <td>
+                    <!-- Form de Edição -->
+                    <form id="edit-form-@course.Id" asp-action="Edit" method="post" class="d-inline">
+                        <input type="hidden" name="Id" value="@course.Id" />
+                        <button type="submit" class="btn btn-primary btn-sm me-2">Guardar</button>
+                    </form>
+
+                    <!-- Form de Apagar -->
+                    <form asp-action="Delete" method="post" class="d-inline">
+                        <input type="hidden" name="id" value="@course.Id" />
+                        <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Tem certeza que deseja apagar este curso?');">Apagar</button>
+                    </form>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
