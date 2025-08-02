@@ -1,0 +1,22 @@
+﻿@model UniShare.Models.Subject
+
+<h2>Criar Disciplina</h2>
+
+<form asp-action="CreateByProfessor" method="post">
+    <div class="mb-3">
+        <label asp-for="Name"></label>
+        <input asp-for="Name" class="form-control" />
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Description"></label>
+        <textarea asp-for="Description" class="form-control"></textarea>
+    </div>
+
+    <div class="mb-3">
+        <label>Curso</label>
+        <select asp-for="CourseId" asp-items="ViewBag.Courses" class="form-control"></select>
+    </div>
+
+    <button class="btn btn-primary" type="submit">Criar Disciplina</button>
+</form>

@@ -403,5 +403,47 @@ namespace UniShare.Controllers
         {
             return _context.Subjects.Any(e => e.Id == id);
         }
+
+        // GET: Admin/News
+        public async Task<IActionResult> News()
+        {
+            var news = await _context.News
+                .Include(n => n.Author)
+                .Include(n => n.Course)
+                .OrderByDescending(n => n.PublicationDate)
+                .ToListAsync();
+
+            return View(news);
+        }
+
+        // GET: Admin/CreateNews
+        [HttpGet]
+        public async Task<IActionResult> CreateNews()
+        {
+            ViewBag.Courses = new SelectList(await _context.Courses.Where(c => c.IsActive).ToListAsync(), "Id", "Name");
+            return View();
+        }
+
+        // POST: Admin/CreateNews
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CreateNews(News news)
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (ModelState.IsValid)
+            {
+                news.AuthorId = user!.Id;
+                news.PublicationDate = DateTime.UtcNow;
+                news.IsActive = true;
+
+                _context.News.Add(news);
+                await _context.SaveChangesAsync();
+                return RedirectToAction("News");
+            }
+
+            ViewBag.Courses = new SelectList(await _context.Courses.Where(c => c.IsActive).ToListAsync(), "Id", "Name", news.CourseId);
+            return View(news);
+        }
+
     }
 }

@@ -1,0 +1,23 @@
+﻿@model UniShare.Models.StudyGroup
+
+<h2>Criar Grupo de Estudo</h2>
+
+<form asp-action="Create" method="post">
+    <div class="mb-3">
+        <label asp-for="Name" class="form-label"></label>
+        <input asp-for="Name" class="form-control" />
+        <span asp-validation-for="Name" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label>Membros</label>
+        <select name="memberIds" class="form-control" multiple size="6">
+            @foreach (var user in (SelectList)ViewBag.Users)
+            {
+                <option value="@user.Value">@user.Text</option>
+            }
+        </select>
+    </div>
+
+    <button class="btn btn-primary" type="submit">Criar</button>
+</form>
